@@ -1,0 +1,5 @@
+# ninja log v5
+0	33	1663158138619086316	CMakeFiles/01_wrapper.dir/client.c.o	a7e73dce18874a8
+34	48	1663158138635086286	CMakeFiles/01_wrapper.dir/server.c.o	9b24f3a292462a49
+48	88	1663158138675086214	CMakeFiles/01_wrapper.dir/socket_utility.c.o	9d465dc7e1c95da4
+88	110	1663158138695086177	01_wrapper	9900b0171f21aa5c
