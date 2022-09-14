@@ -7,12 +7,15 @@
 #include <time.h>
 #include "socket_utility.h"
 
+#define BUFF_SIZE 4096
+#define MAX_LEN_QUEUE 1024
+
 int main()
 {
     int listen_file_descriptor;
     int connection_file_descriptor;
 
-    char write_buffer[4096];
+    char write_buffer[BUFF_SIZE];
     time_t ticks;
 
     struct sockaddr_in server_address;
@@ -24,7 +27,7 @@ int main()
     server_address.sin_port = htons(13);
 
     BindIPV4(listen_file_descriptor, &server_address);
-    Listen(listen_file_descriptor,1024);
+    Listen(listen_file_descriptor,MAX_LEN_QUEUE);
 
     for(;;)
     {
