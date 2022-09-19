@@ -5,8 +5,10 @@ set(CMAKE_C_STANDARD 11)
 
 include_directories(.)
 
-add_executable(01_wrapper
-        client.c
+add_executable(server
         server.c
-        socket_utility.c
-        socket_utility.h)
+        socket_utility.c)
+
+add_executable(client
+        client.c
+        socket_utility.c)

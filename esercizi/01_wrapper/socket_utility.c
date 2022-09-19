@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
 #include "socket_utility.h"
 
 /**
@@ -56,8 +58,8 @@ void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in *endpoint)
 /**
  * @brief Configura il file descrittore passato in input in ascolto con una coda delle richieste pari a @max_len_request 
  * 
- * @param listen_file_descriptor 
- * @param max_len_request_queue 
+ * @param listen_file_descriptor file descriptor su cui vogliamo rimanere in ascolto
+ * @param max_len_request_queue numero massimo di client in attesa di essere serviti
  */
 void Listen(int listen_file_descriptor, int max_len_request_queue)
 {
@@ -69,12 +71,12 @@ void Listen(int listen_file_descriptor, int max_len_request_queue)
 }
 
 /**
- * @brief 
+ * @brief Accetta una connessione in pendenza
  * 
- * @param listen_file_descriptor 
- * @param client_endpoint 
- * @param size_client_endpoint 
- * @return int 
+ * @param listen_file_descriptor  File descriptor su cui arriverà la connessione (deve essere configurato in modalità listen)
+ * @param client_endpoint puntatore alla struttura per rappresentare un endpoint (parametro di output)
+ * @param size_client_endpoint puntatore alla size della struttura utilizzata (parametro di output)
+ * @return int file descriptor con le stesse proprietà del @listen_file_descriptor
  */
 int Accept(int listen_file_descriptor, struct sockaddr *client_endpoint, socklen_t *size_client_endpoint)
 {
@@ -87,4 +89,91 @@ int Accept(int listen_file_descriptor, struct sockaddr *client_endpoint, socklen
     }
 
     return connection_file_descriptor;
+}
+
+/**
+ * @brief funzione per la scrittura di caratteri in un buffer
+ *
+ * @param file_descriptor file descrittore del socket su cui scrivere
+ * @param buffer area di memoria in cui scrivere
+ * @param ch_to_print numero massimo di caratteri da scrivere nel buffer
+ * @return ritorna il valore dei caratteri rimanenti da scrivere
+ */
+size_t FullWrite(int file_descriptor, const void *buffer, size_t ch_to_print)
+{
+    size_t n_left = ch_to_print; /* Caratteri rimanenti da scrivere */
+    ssize_t n_written; /* Caratteri scritti */
+
+    /* Costrutto iterativo, che si ripeterà fino a quando ci sono caratteri da scrivere */
+    while(n_left > 0)
+    {
+        /* Se la write restituisce errore */
+        if((n_written = write(file_descriptor,buffer,n_left)) < 0)
+        {
+            /* Interruzione da una system call */
+            if(errno == EINTR)
+            {
+                /* Ripeti il loop */
+                continue;
+            }
+            else
+            {
+                /* In qualsiasi altro caso esci con errore */
+                exit((int)n_written); /* n_written = -1 */
+            }
+        }
+
+        /* Aggiorniamo i caratteri rimanenti da scrivere */
+        n_left -= n_written;
+        /* Aggiorniamo lo spiazzamento del buffer */
+        buffer += n_written;
+    }
+
+    return (n_left);
+}
+
+/**
+ * @brief funzione per la lettura dei caratteri di un buffer
+ *
+ * @param file_descriptor file descrittore del socket su cui leggere
+ * @param buffer buffer che deve essere letto
+ * @param ch_to_read caratteri da leggere dal buffer
+ * @return il valore dei caratteri rimanenti da leggere
+ */
+size_t FullRead(int file_descriptor, void *buffer, size_t ch_to_read)
+{
+    size_t n_left = ch_to_read; /* Caratteri rimanenti da leggere */
+    ssize_t n_read; /* Caratteri letti */
+
+    /* Costrutto iterativo, che si ripeterà fino a quando ci sono caratteri da leggere */
+    while(n_left > 0)
+    {
+        /* Se la read restituisce errore */
+        if((n_read = read(file_descriptor, buffer, n_left)) < 0)
+        {
+            /* Interruzione da una system call */
+            if(errno == EINTR)
+            {
+                continue;
+            }
+            else
+            {
+                /* In qualsiasi altro caso esci con errore */
+                exit((int)n_read);/* n_read = -1 */
+            }
+        }
+        else if(n_read == 0)    /* EOF */
+        {
+            /* Se abbiamo raggiunto la fine del file, interrompiamo il ciclo */
+            break;
+        }
+
+        /* Aggiorniamo i caratteri rimanenti da leggere */
+        n_left -= n_read;
+        /* Aggiorniamo lo spiazzamento del buffer */
+        buffer += n_read;
+    }
+
+    buffer = 0;
+    return(n_left);
 }

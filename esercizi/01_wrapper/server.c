@@ -8,7 +8,7 @@
 #include "socket_utility.h"
 
 #define BUFF_SIZE 4096
-#define MAX_LEN_QUEUE 1024
+#define BACKLOG 1024
 
 int main()
 {
@@ -27,21 +27,21 @@ int main()
     server_address.sin_port = htons(13);
 
     BindIPV4(listen_file_descriptor, &server_address);
-    Listen(listen_file_descriptor,MAX_LEN_QUEUE);
+    Listen(listen_file_descriptor, BACKLOG);
 
     for(;;)
     {
         connection_file_descriptor = Accept(listen_file_descriptor,NULL,NULL);
 
         ticks = time(NULL);
-        snprintf(write_buffer, sizeof(write_buffer), "%24s\n", ctime(&ticks));
+        snprintf(write_buffer, sizeof(write_buffer), "%.24s\n", ctime(&ticks));
 
-        if(write(connection_file_descriptor, write_buffer, strlen(write_buffer)) != strlen(write_buffer))
+        if(FullWrite(connection_file_descriptor, write_buffer, strlen(write_buffer) + 1) < 0)
         {
-            perror("Write");
+            perror("Write: ");
             exit(1);
         }
-        close(connection_file_descriptor);
 
+        close(connection_file_descriptor);
     }
 }

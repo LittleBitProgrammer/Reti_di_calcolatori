@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include "socket_utility.h"
 
 int main(int argc, char **argv)
@@ -28,20 +27,10 @@ int main(int argc, char **argv)
     }
 
     ConnectIPV4(socket_file_descriptor, &server_address);
-    while((n = read(socket_file_descriptor,receive_line,1024)) > 0)
+    FullRead(socket_file_descriptor, receive_line, 1025);
+    if (fputs(receive_line,stdout) == EOF)
     {
-        receive_line[n] =  0;
-
-        if (fputs(receive_line,stdout) == EOF)
-        {
-            fprintf(stderr,"fputs error\n");
-            exit(1);
-        }
-    }
-
-    if(n < 0)
-    {
-        fprintf(stderr, "read error\n");
+        fprintf(stderr,"fputs error\n");
         exit(1);
     }
 
