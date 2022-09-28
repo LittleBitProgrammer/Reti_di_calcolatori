@@ -174,6 +174,6 @@ size_t FullRead(int file_descriptor, void *buffer, size_t ch_to_read)
         buffer += n_read;
     }
 
-    buffer = 0;
+    //buffer = 0;
     return(n_left);
 }

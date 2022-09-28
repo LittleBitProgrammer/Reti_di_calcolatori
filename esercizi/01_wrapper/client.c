@@ -8,7 +8,6 @@ int main(int argc, char **argv)
     struct sockaddr_in server_address;
 
     char receive_line[1025];
-    long int n;
 
     if(argc != 2)
     {
