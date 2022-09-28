@@ -13,6 +13,8 @@ int main() {
     int listen_file_descriptor;
     int connection_file_descriptor;
 
+    int is_address_reusable = 1;
+
     struct sockaddr_in server_address;
     struct sockaddr_in client_address;
 
@@ -29,6 +31,9 @@ int main() {
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons(13);
+
+    /* Riutilizzo dell'indirizzo IP:PORTA */
+    setsockopt(listen_file_descriptor,SOL_SOCKET,SO_REUSEADDR,&is_address_reusable, sizeof(is_address_reusable)); /*! SACROSANTO */
 
     /* Collegamento del file descriptor all'indirizzo del server */
     BindIPV4(listen_file_descriptor, &server_address);
