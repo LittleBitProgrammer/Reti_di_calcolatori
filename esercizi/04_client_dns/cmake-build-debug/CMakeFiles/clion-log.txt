@@ -1,0 +1,4 @@
+/snap/clion/206/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/206/bin/ninja/linux/ninja -G Ninja -S /home/roberto/Desktop/workspace/Reti_di_calcolatori/esercizi/04_client_dns -B /home/roberto/Desktop/workspace/Reti_di_calcolatori/esercizi/04_client_dns/cmake-build-debug
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/roberto/Desktop/workspace/Reti_di_calcolatori/esercizi/04_client_dns/cmake-build-debug
