@@ -1,0 +1,9 @@
+# ninja log v5
+0	59	1664357476795746596	CMakeFiles/server.dir/signal_handler.c.o	97a58107ba16ddb
+0	355	1664355457598396769	CMakeFiles/client.dir/socket_utility.c.o	10936ea3029332c8
+355	373	1664355457690396407	client	f5cfc322d263e0ae
+0	23	1664357700126248468	build.ninja	5d774ca618a6adac
+0	36	1664356499634744388	CMakeFiles/server.dir/server.c.o	6325ec9438a3a5c7
+0	270	1664355457586396816	CMakeFiles/client.dir/client.c.o	bbc6e8f06ff50843
+1	37	1664355485238289585	CMakeFiles/server.dir/socket_utility.c.o	1c2c9206f55671f0
+60	77	1664357476819746601	server	1251baa88ebd2727

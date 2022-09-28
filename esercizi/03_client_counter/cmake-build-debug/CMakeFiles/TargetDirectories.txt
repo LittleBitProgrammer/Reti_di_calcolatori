@@ -1,0 +1,4 @@
+/home/roberto/Desktop/workspace/Reti_di_calcolatori/esercizi/03_client_counter/cmake-build-debug/CMakeFiles/client.dir
+/home/roberto/Desktop/workspace/Reti_di_calcolatori/esercizi/03_client_counter/cmake-build-debug/CMakeFiles/server.dir
+/home/roberto/Desktop/workspace/Reti_di_calcolatori/esercizi/03_client_counter/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/roberto/Desktop/workspace/Reti_di_calcolatori/esercizi/03_client_counter/cmake-build-debug/CMakeFiles/rebuild_cache.dir
