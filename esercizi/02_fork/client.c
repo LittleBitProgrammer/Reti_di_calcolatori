@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     if (argc != 2)
     {
         fprintf(stderr, "usage: %s <IP ADDRESS>\n", argv[0]);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* Creazione della socket */
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     if(inet_pton(AF_INET, argv[1], &server_address.sin_addr) <= 0)
     {
         fprintf(stderr, "inet_pton error for %s\n", argv[1]);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* Connessione */
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     if (fputs(buffer, stdout) == EOF)
     {
         fprintf(stderr, "Fputs error\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return 0;

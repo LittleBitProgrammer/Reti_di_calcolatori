@@ -33,7 +33,11 @@ int main() {
     server_address.sin_port = htons(13);
 
     /* Riutilizzo dell'indirizzo IP:PORTA */
-    setsockopt(listen_file_descriptor,SOL_SOCKET,SO_REUSEADDR,&is_address_reusable, sizeof(is_address_reusable)); /*! SACROSANTO */
+    if(setsockopt(listen_file_descriptor,SOL_SOCKET,SO_REUSEADDR,&is_address_reusable, sizeof(is_address_reusable)) < 0)
+    {
+        perror("Setsock error: ");
+        exit(EXIT_FAILURE);
+    }
 
     /* Collegamento del file descriptor all'indirizzo del server */
     BindIPV4(listen_file_descriptor, &server_address);
@@ -54,7 +58,7 @@ int main() {
         if((process_id = fork()) < 0)
         {
             perror("Fork error: ");
-            exit(-1);
+            exit(EXIT_FAILURE);
         }
 
         /* Codice eseguibile solo dal processo figlio */
@@ -74,7 +78,7 @@ int main() {
             /* Chiudiamo la connessione del client (solo processo figlio) */
             close(connection_file_descriptor);
 
-            exit(0);
+            exit(EXIT_SUCCESS);
         }
         else
         {
@@ -85,5 +89,5 @@ int main() {
 
 
     /* Mai raggiunta */
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

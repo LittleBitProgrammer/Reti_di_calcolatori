@@ -19,7 +19,7 @@ int Socket(int address_family, int transport_type, int transport_subtype)
     if((file_descriptor = socket(address_family, transport_type, transport_subtype))< 0)
     {
         perror("Socket");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return file_descriptor;
@@ -36,7 +36,7 @@ void ConnectIPV4(int source_file_descriptor, struct sockaddr_in *destination_end
     if(connect(source_file_descriptor, (struct sockaddr*) destination_endpoint, sizeof(*destination_endpoint)) < 0)
     {
         perror("Connect IPV4");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -51,7 +51,7 @@ void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in *endpoint)
     if(bind(file_descriptor_to_bind, (struct sockaddr*) endpoint, sizeof(*endpoint)) < 0)
     {
         perror("Bind IPV4");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -66,7 +66,7 @@ void Listen(int listen_file_descriptor, int max_len_request_queue)
     if(listen(listen_file_descriptor, max_len_request_queue) < 0)
     {
         perror("Listen");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -85,7 +85,7 @@ int AcceptIPV4(int listen_file_descriptor, struct sockaddr_in *client_endpoint, 
     if((connection_file_descriptor = accept(listen_file_descriptor, (struct sockaddr*)client_endpoint, size_client_endpoint)) < 0)
     {
         perror("Accept");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     return connection_file_descriptor;
