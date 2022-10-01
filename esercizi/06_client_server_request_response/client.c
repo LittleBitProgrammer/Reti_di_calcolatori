@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <unistd.h>
 #include "socket_utility.h"
 
 #define WRITER_BUFFER_SIZE 4096
@@ -70,7 +71,12 @@ int main(int argc, char**argv) {
      * ==================================
      * */
     printf("Inserire una stringa di caratteri qualsiasi:\n");
-    fgets(writer_buffer, WRITER_BUFFER_SIZE, stdin);
+    if(fgets(writer_buffer, WRITER_BUFFER_SIZE, stdin) == NULL)
+    {
+        fprintf(stderr, "Input error\n");
+        close(socket_file_descriptor);
+        exit(EXIT_FAILURE);
+    }
 
     /*
      * ==================================
