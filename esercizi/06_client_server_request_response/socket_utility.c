@@ -187,6 +187,12 @@ void PrintClientIPV4(struct sockaddr_in* client_address, char *buffer, socklen_t
     /* Stampa informazioni del client */
     printf("Request from host %s, port %d,", buffer, ntohs(client_address->sin_port));
 
-    host = gethostbyaddr((const char *) &(client_address->sin_addr), sizeof(client_address->sin_addr), client_address->sin_family);
+    if((host = gethostbyaddr((const char *) &(client_address->sin_addr), sizeof(client_address->sin_addr), client_address->sin_family)) == NULL)
+    {
+        herror("Reverse DNS error: ");
+        exit(EXIT_FAILURE);
+    }
+
+
     printf(" hostname %s\n", host->h_name);
 }
