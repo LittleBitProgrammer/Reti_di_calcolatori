@@ -74,7 +74,6 @@ int main(int argc, char**argv) {
     if(fgets(writer_buffer, WRITER_BUFFER_SIZE, stdin) == NULL)
     {
         fprintf(stderr, "Input error\n");
-        close(socket_file_descriptor);
         exit(EXIT_FAILURE);
     }
 
