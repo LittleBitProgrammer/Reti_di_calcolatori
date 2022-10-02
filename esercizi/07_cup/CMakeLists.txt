@@ -3,6 +3,7 @@ project(07_cup C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 include_directories(.)
 
