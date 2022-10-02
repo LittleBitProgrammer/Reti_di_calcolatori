@@ -72,7 +72,15 @@ int main(int argc, char **argv)
      * ==========================
      * */
     FullRead(socket_file_descriptor, size_list_buffer, sizeof(*size_list_buffer));
-    printf("%d %d\n", size_list_buffer->rows, size_list_buffer->columns);
+    char exam_list[size_list_buffer->rows][size_list_buffer->columns];
+
+    FullRead(socket_file_descriptor, exam_list, sizeof(exam_list));
+
+    int i;
+    for(i = 0; i < size_list_buffer->rows; i++)
+    {
+        printf("%d. %s\n", i + 1,exam_list[i]);
+    }
 
     return 0;
 }

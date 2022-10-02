@@ -133,6 +133,14 @@ int main(int argc, char** argv)
 
             FullWrite(connection_file_descriptor, size_list_buffer, sizeof(*size_list_buffer));
 
+            /* Reading all the exams */
+            char exam_list[size_list_buffer->rows][size_list_buffer->columns];
+            int i = 0;
+
+            while(fscanf(exams_file, "%s", exam_list[i++]) == 1);
+
+            FullWrite(connection_file_descriptor, exam_list, sizeof(exam_list));
+
 
             close(connection_file_descriptor);
             exit(EXIT_SUCCESS);
