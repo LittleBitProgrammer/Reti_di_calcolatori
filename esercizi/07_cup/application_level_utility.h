@@ -7,7 +7,7 @@
 
 #include "bool_utility.h"
 
-typedef struct request
+typedef struct __attribute__((__packed__)) request
 {
     char name[255];
     char surname[255];
@@ -15,13 +15,13 @@ typedef struct request
     char exam[255];
 } Request;
 
-typedef struct response
+typedef struct __attribute__((__packed__)) response
 {
     bool result;
     char exam_date[10];
 } Response;
 
-typedef struct size_list
+typedef struct __attribute__((__packed__)) size_list
 {
     int rows;
     int columns;

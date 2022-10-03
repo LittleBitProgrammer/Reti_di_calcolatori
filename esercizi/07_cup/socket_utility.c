@@ -179,6 +179,13 @@ size_t FullRead(int file_descriptor, void *buffer, size_t ch_to_read)
     return(n_left);
 }
 
+/**
+ * @brief Funzione che permette di stampare le informazioni relative al client
+ *
+ * @param client_address Endpoint del client contente le informazioni da stampare
+ * @param buffer Buffer utilizzato per memorizzare le informazioni del client
+ * @param buffer_size Grandezza del buffer
+ * */
 void PrintClientIPV4(struct sockaddr_in* client_address, char *buffer, socklen_t buffer_size)
 {
     struct hostent *host;

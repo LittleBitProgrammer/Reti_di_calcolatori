@@ -184,7 +184,6 @@ int main(int argc, char** argv)
                 }
             }while(strcmp(command_buffer, commands[2]) != 0);
 
-            printf("CACCA PUPU\n");
             // CASO CMD_EXIT
             fclose(exams_file);
             close(connection_file_descriptor);
