@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 {
     /*
      * ==========================
-     * =       Variables        =
+     * =       VARIABLES        =
      * ==========================
      * */
     int                listen_file_descriptor;                                          /* Socket in listening mode */
@@ -29,6 +29,17 @@ int main(int argc, char** argv)
     FILE*              exams_file;                                                      /* File with the exams */
     const char*        exams_file_path = "exams";                                       /* File path */
     Size_list*         size_list_buffer = (Size_list *)malloc(sizeof(Size_list));  /* Package that represents the size of exam's list */
+
+    /*
+     * ==========================
+     * =    VARIABLE HANDLER    =
+     * ==========================
+     * */
+    if(size_list_buffer == NULL || response_buffer == NULL || response_buffer == NULL)
+    {
+        perror("Error while allocating memory: ");
+        exit(EXIT_FAILURE);
+    }
 
     /*
      * ==========================
@@ -150,6 +161,15 @@ int main(int argc, char** argv)
             close(connection_file_descriptor);
         }
     }
+
+    /*
+     * ==========================
+     * =       FREE HEAP        =
+     * ==========================
+     * */
+    free(size_list_buffer);
+    free(request_buffer);
+    free(response_buffer);
 
     /* Unreachable */
     exit(EXIT_SUCCESS);

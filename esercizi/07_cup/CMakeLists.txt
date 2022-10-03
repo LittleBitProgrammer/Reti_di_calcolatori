@@ -9,7 +9,7 @@ include_directories(.)
 
 add_executable(client client.c
                       socket_utility.c socket_utility.h
-                      application_level_utility.c application_level_utility.h)
+                      application_level_utility.c application_level_utility.h menu_utility.c menu_utility.h)
 
 add_executable(server server.c
                       socket_utility.c socket_utility.h

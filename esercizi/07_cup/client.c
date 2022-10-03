@@ -3,14 +3,13 @@
 #include <netdb.h>
 #include "socket_utility.h"
 #include "application_level_utility.h"
-
-#define SIZE_LIST_LEN 2
+#include "menu_utility.h"
 
 int main(int argc, char **argv)
 {
     /*
      * ==========================
-     * =       Variables        =
+     * =       VARIABLES        =
      * ==========================
      * */
     int                socket_file_descriptor;                                         /* Socket client file descriptor */
@@ -23,7 +22,18 @@ int main(int argc, char **argv)
 
     /*
      * ==========================
-     * =       Arguments        =
+     * =    VARIABLE HANDLER    =
+     * ==========================
+     * */
+    if(size_list_buffer == NULL || response_buffer == NULL || response_buffer == NULL)
+    {
+        perror("Error while allocating memory: ");
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * ==========================
+     * =       ARGUMENTS        =
      * ==========================
      * */
     if(argc != 2)
@@ -76,11 +86,17 @@ int main(int argc, char **argv)
 
     FullRead(socket_file_descriptor, exam_list, sizeof(exam_list));
 
-    int i;
-    for(i = 0; i < size_list_buffer->rows; i++)
-    {
-        printf("%d. %s\n", i + 1,exam_list[i]);
-    }
 
+    //print_menu_voices(size_list_buffer->rows, size_list_buffer->columns, exam_list);
+
+
+    /*
+     * ==========================
+     * =       FREE HEAP        =
+     * ==========================
+     * */
+    free(size_list_buffer);
+    free(request_buffer);
+    free(response_buffer);
     return 0;
 }
