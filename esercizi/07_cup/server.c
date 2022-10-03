@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
+#include <string.h>
 #include "socket_utility.h"
 #include "application_level_utility.h"
 
@@ -22,6 +23,8 @@ int main(int argc, char** argv)
     struct sockaddr_in client_address;                                                  /* Client's structure */
     Request*           request_buffer = (Request *)malloc(sizeof(Request));        /* Package that represents the requested visit */
     Response*          response_buffer = (Response *)malloc(sizeof(Response));     /* Package that represents the response visit */
+    char*              command_buffer = (char *)malloc(sizeof(char));              /* Variable to decide the action of the server */
+    size_t             len_command_buffer;                                              /* Command buffer size */
     socklen_t          client_size = sizeof(client_address);                            /* Client's size */
     pid_t              process_id;                                                      /* ID of forked process */
     time_t             ticks;                                                           /* Seconds from 01/01/1970 until now */
@@ -29,13 +32,14 @@ int main(int argc, char** argv)
     FILE*              exams_file;                                                      /* File with the exams */
     const char*        exams_file_path = "exams";                                       /* File path */
     Size_list*         size_list_buffer = (Size_list *)malloc(sizeof(Size_list));  /* Package that represents the size of exam's list */
+    char*              commands[] = {"CMD_EXAM", "CMD_REFRESH"};                /* List of commands */
 
     /*
      * ==========================
      * =    VARIABLE HANDLER    =
      * ==========================
      * */
-    if(size_list_buffer == NULL || response_buffer == NULL || response_buffer == NULL)
+    if(size_list_buffer == NULL || response_buffer == NULL || response_buffer == NULL || command_buffer == NULL)
     {
         perror("Error while allocating memory: ");
         exit(EXIT_FAILURE);
@@ -152,6 +156,25 @@ int main(int argc, char** argv)
 
             FullWrite(connection_file_descriptor, exam_list, sizeof(exam_list));
 
+            /*
+             * ==========================
+             * =     COMMAND CHOICE     =
+             * ==========================
+             * */
+            FullRead(connection_file_descriptor, &len_command_buffer, sizeof(len_command_buffer));
+            FullRead(connection_file_descriptor, command_buffer, len_command_buffer);
+
+            if(!strcmp(command_buffer, commands[0]))
+            {
+                // CASO CMD_EXAM
+                FullRead(connection_file_descriptor, request_buffer, sizeof(*request_buffer));
+                printf("%s\n%s\n%s\n%s\n", request_buffer->name, request_buffer->surname, request_buffer->code, request_buffer->exam);
+            }
+            else
+            {
+                // CASO CMD_REFRESH
+
+            }
 
             close(connection_file_descriptor);
             exit(EXIT_SUCCESS);
@@ -170,6 +193,7 @@ int main(int argc, char** argv)
     free(size_list_buffer);
     free(request_buffer);
     free(response_buffer);
+    free(command_buffer);
 
     /* Unreachable */
     exit(EXIT_SUCCESS);
