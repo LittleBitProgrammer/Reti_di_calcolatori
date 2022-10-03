@@ -16,23 +16,23 @@ int main(int argc, char** argv)
      * =       VARIABLES        =
      * ==========================
      * */
-    int                listen_file_descriptor;                                          /* Socket in listening mode */
-    int                connection_file_descriptor;                                      /* Socket for the connection with the client */
-    int                is_address_reusable = 1;                                         /* Flag for socket option */
-    struct sockaddr_in server_address;                                                  /* Sever's structure */
-    struct sockaddr_in client_address;                                                  /* Client's structure */
-    Request*           request_buffer = (Request *)malloc(sizeof(Request));        /* Package that represents the requested visit */
-    Response*          response_buffer = (Response *)malloc(sizeof(Response));     /* Package that represents the response visit */
-    char*              command_buffer = (char *)malloc(sizeof(char));              /* Variable to decide the action of the server */
-    size_t             len_command_buffer;                                              /* Command buffer size */
-    socklen_t          client_size = sizeof(client_address);                            /* Client's size */
-    pid_t              process_id;                                                      /* ID of forked process */
-    time_t             ticks;                                                           /* Seconds from 01/01/1970 until now */
-    char               ip_buffer[INET6_ADDRSTRLEN];                                     /* Buffer of IP address dotted decimal */
-    FILE*              exams_file;                                                      /* File with the exams */
-    const char*        exams_file_path = "exams";                                       /* File path */
-    Size_list*         size_list_buffer = (Size_list *)malloc(sizeof(Size_list));  /* Package that represents the size of exam's list */
-    char*              commands[] = {"CMD_EXAM", "CMD_REFRESH"};                /* List of commands */
+    int                listen_file_descriptor;                                                  /* Socket in listening mode */
+    int                connection_file_descriptor;                                              /* Socket for the connection with the client */
+    int                is_address_reusable = 1;                                                 /* Flag for socket option */
+    struct sockaddr_in server_address;                                                          /* Sever's structure */
+    struct sockaddr_in client_address;                                                          /* Client's structure */
+    Request*           request_buffer = (Request *)malloc(sizeof(Request));                /* Package that represents the requested visit */
+    Response*          response_buffer = (Response *)malloc(sizeof(Response));             /* Package that represents the response visit */
+    char*              command_buffer = (char *)malloc(sizeof(char));                      /* Variable to decide the action of the server */
+    size_t             len_command_buffer;                                                      /* Command buffer size */
+    socklen_t          client_size = sizeof(client_address);                                    /* Client's size */
+    pid_t              process_id;                                                              /* ID of forked process */
+    time_t             ticks;                                                                   /* Seconds from 01/01/1970 until now */
+    char               ip_buffer[INET6_ADDRSTRLEN];                                             /* Buffer of IP address dotted decimal */
+    FILE*              exams_file;                                                              /* File with the exams */
+    const char*        exams_file_path = "exams";                                               /* File path */
+    Size_list*         size_list_buffer = (Size_list *)malloc(sizeof(Size_list));          /* Package that represents the size of exam's list */
+    char*              commands[] = {"CMD_EXAM", "CMD_REFRESH", "CMD_EXIT"};        /* List of commands */
 
     /*
      * ==========================
@@ -67,6 +67,7 @@ int main(int argc, char** argv)
      * ==========================
      * */
     setsockopt(listen_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &is_address_reusable, sizeof(is_address_reusable));
+    setsockopt(listen_file_descriptor, SOL_SOCKET, SO_DEBUG, &is_address_reusable, sizeof(is_address_reusable));
 
     /*
      * ==========================
@@ -156,26 +157,36 @@ int main(int argc, char** argv)
 
             FullWrite(connection_file_descriptor, exam_list, sizeof(exam_list));
 
-            /*
-             * ==========================
-             * =     COMMAND CHOICE     =
-             * ==========================
-             * */
-            FullRead(connection_file_descriptor, &len_command_buffer, sizeof(len_command_buffer));
-            FullRead(connection_file_descriptor, command_buffer, len_command_buffer);
-
-            if(!strcmp(command_buffer, commands[0]))
+            do
             {
-                // CASO CMD_EXAM
-                FullRead(connection_file_descriptor, request_buffer, sizeof(*request_buffer));
-                printf("%s\n%s\n%s\n%s\n", request_buffer->name, request_buffer->surname, request_buffer->code, request_buffer->exam);
-            }
-            else
-            {
-                // CASO CMD_REFRESH
+                /*
+                 * ==========================
+                 * =     COMMAND CHOICE     =
+                 * ==========================
+                 * */
+                FullRead(connection_file_descriptor, &len_command_buffer, sizeof(len_command_buffer));
+                FullRead(connection_file_descriptor, command_buffer, len_command_buffer);
 
-            }
+                /*
+                 * ==========================
+                 * = CHECK SELECTED COMMAND =
+                 * ==========================
+                 * */
+                if(!strcmp(command_buffer, commands[0]))
+                {
+                    // CASO CMD_EXAM
+                    FullRead(connection_file_descriptor, request_buffer, sizeof(*request_buffer));
+                    printf("%s\n%s\n%s\n%s\n", request_buffer->name, request_buffer->surname, request_buffer->code, request_buffer->exam);
+                }
+                else
+                {
+                    // CASO CMD_REFRESH
+                }
+            }while(strcmp(command_buffer, commands[2]) != 0);
 
+            printf("CACCA PUPU\n");
+            // CASO CMD_EXIT
+            fclose(exams_file);
             close(connection_file_descriptor);
             exit(EXIT_SUCCESS);
         }

@@ -30,13 +30,17 @@ void booking_request(Request* request)
     printf("\nCompilare la prenotazione\n");
     printf("Nome: ");
     scanf("%s", request->name);
+    fflush(stdin);
 
     printf("Cognome: ");
     scanf("%s", request->surname);
+    fflush(stdin);
 
     printf("Codice: ");
     scanf("%s", request->code);
+    fflush(stdin);
 
     printf("Esame: ");
     scanf("%s", request->exam);
+    fflush(stdin);
 }

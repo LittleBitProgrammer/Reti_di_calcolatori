@@ -86,54 +86,77 @@ int main(int argc, char **argv)
     FullRead(socket_file_descriptor, size_list_buffer, sizeof(*size_list_buffer));
     char exam_list[size_list_buffer->rows][size_list_buffer->columns];
 
+    printf("exam_list: %lu\n", sizeof(exam_list));
+
     FullRead(socket_file_descriptor, exam_list, sizeof(exam_list));
 
-    /*
-     * ==========================
-     * =      PRINT  MENU       =
-     * ==========================
-     * */
-    print_menu();
-    scanf("%hd", &menu_choice);
+    while(1)
+    {
+        /*
+         * ==========================
+         * =      PRINT  MENU       =
+         * ==========================
+         * */
+        print_menu();
+        scanf("%hd", &menu_choice);
 
-    fflush(stdin);
+        fflush(stdin);
 
-    /*
-     * ==========================
-     * =      MENU CHOICES      =
-     * ==========================
-     * */
-    switch (menu_choice) {
-        case 1:
-            command_buffer = "CMD_EXAM";
-            len_command_buffer = strlen(command_buffer) + 1;
-            FullWrite(socket_file_descriptor, &len_command_buffer, sizeof(len_command_buffer));
-            FullWrite(socket_file_descriptor, command_buffer, len_command_buffer);
+        /*
+         * ==========================
+         * =      MENU CHOICES      =
+         * ==========================
+         * */
+        switch (menu_choice) {
+            case 1:
+                command_buffer = "CMD_EXAM";
+                len_command_buffer = strlen(command_buffer) + 1;
 
-            print_menu_voices(size_list_buffer->rows, size_list_buffer->columns, exam_list);
-            printf("\nInserire esame da prenotare: ");
+                /* Write della lunghezza */
+                FullWrite(socket_file_descriptor, &len_command_buffer, sizeof(len_command_buffer));
+                /* Write del buffer di comandi */
+                FullWrite(socket_file_descriptor, command_buffer, len_command_buffer);
 
-            scanf("%hd", &menu_choice);
-            fflush(stdin);
+                print_menu_voices(size_list_buffer->rows, size_list_buffer->columns, exam_list);
+                printf("\nInserire esame da prenotare: ");
 
-            booking_request(request_buffer);
+                scanf("%hd", &menu_choice);
+                fflush(stdin);
 
-            FullWrite(socket_file_descriptor, request_buffer, sizeof(*request_buffer));
-            break;
+                booking_request(request_buffer);
 
-            /*
-        case 2:
-            break;
-            */
+                FullWrite(socket_file_descriptor, request_buffer, sizeof(*request_buffer));
+                break;
 
-        case 3:
-            exit(EXIT_SUCCESS);
+                /*
+            case 2:
+                break;
+                */
+
+            case 3:
+                command_buffer = "CMD_EXIT";
+                len_command_buffer = strlen(command_buffer) + 1;
+                FullWrite(socket_file_descriptor, &len_command_buffer, sizeof(len_command_buffer));
+                FullWrite(socket_file_descriptor, command_buffer, len_command_buffer);
+
+                printf("Arrivederci");
+
+                free(size_list_buffer);
+                free(request_buffer);
+                free(response_buffer);
+                exit(EXIT_SUCCESS);
 
 
-        default:
-            fprintf(stderr, "Il comando selezionato non è valido\n");
-            exit(EXIT_FAILURE);
+            default:
+                fprintf(stderr, "Il comando selezionato non è valido\n");
+
+                free(size_list_buffer);
+                free(request_buffer);
+                free(response_buffer);
+                exit(EXIT_FAILURE);
+        }
     }
+
 
     /*
      * ==========================
