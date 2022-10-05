@@ -4,7 +4,6 @@
 #include "bool_utility.h"
 
 bool InsertCode(char *);
-bool digits_only(const char *);
 bool CheckRegion(char *);
 bool StringCodeIsWritten(FILE *, char *);
 bool CheckCode(char *);
