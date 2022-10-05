@@ -1,41 +1,48 @@
-//
-// Created by francesco on 04/10/22.
-//
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <malloc.h>
-
+#include <stdlib.h>
 #include "codice_fiscale.h"
 
-#define COD_LEN 12 //20      /* Lunghezza massima della stringa */
+#define CODE_LEN 20      /* Lunghezza massima della stringa */
 
 /**
  * @brief Controlla se la lunghezza della stringa è giusta e se sono stati digitati solo numeri
  *
- * @param cod stringa da controllare
+ * @param code stringa da controllare
  *
  * @return ritorna TRUE se la stringa è giusta altrimenti ritorna FALSE
  * */
-bool VerifyCod(char * cod){
-    if (strlen(cod) < COD_LEN)               /* Caso in cui la lunghezza del codice sia piu corta */
+bool InsertCode(char* code){
+    /* Controllo se sono stati digitati solo numeri*/
+    if(digits_only(code))
     {
-        printf("Lunghezza del codice troppo corta!\n");
-        return FALSE;
-    } else if (strlen(cod) > COD_LEN)        /* Caso in cui la lunghezza del codice sia piu lunga */
-    {
-        printf("Lunghezza del codice troppo lunga!\n");
-        return FALSE;
-    } else if (digits_only(cod))                /* Caso in cui la lunghezza sia giusta e controllo se sono stati digitati solo numeri*/
-    {
-        char * tmp = (char *) malloc(COD_LEN * sizeof(char));
-        memcpy(tmp, cod, 5);
-        if(!strcmp(tmp, "80380") && ControlloRegione(cod, tmp))               /* Controllo dei primi 5 numeri standard */
+        /* Caso in cui la lunghezza del codice sia piu corta */
+        if (strlen(code) < CODE_LEN)
         {
-            return TRUE;
+            printf("Lunghezza del codice troppo corta!\n");
+            return FALSE;
         }
-
-        free(tmp);
+        /* Caso in cui la lunghezza del codice sia piu lunga */
+        else if (strlen(code) > CODE_LEN)
+        {
+            printf("Lunghezza del codice troppo lunga!\n");
+            return FALSE;
+        }
+        /* Caso in cui la lughezza sia giusta*/
+        else
+        {
+            /*
+             * Controllo su:
+             *      1. I primi 5 numeri standard per ogni codice;
+             *      2. I successivi 5 numeri che corrispondono alle regioni italiane;
+             *      3. Sul successo dell'inserimento all'intero del codice nel file.
+             * */
+            if(!strncmp(code, "80380", 5) && CheckRegion(code) && CheckCode(code))
+            {
+                return TRUE;
+            }
+        }
     }
 
     return FALSE;
@@ -44,36 +51,146 @@ bool VerifyCod(char * cod){
 /**
  * @brief Controllo se sono stati inseriti solo numeri
  *
- * @param cod codice da controllare
+ * @param code codice da controllare
  *
  * @return TRUE se sono inseriti solo numeri altrimenti FALSE
  * */
-bool digits_only(const char *cod)
+bool digits_only(const char* code)
 {
-    while (*cod)
+    while (*code)
     {
-        if (isdigit(*cod++) == 0) return FALSE;
+        /**
+         * Function isdigit() takes a single argument in the form of an integer and returns the value of type int.
+
+         *  Even though, isdigit() takes integer as an argument, character is
+         *  passed to the function. Internally, the character is converted to its
+         *  ASCII value for the check.
+         *
+         *  @return Non-zero integer ( x > 0 ) if argument is a numeric character else Zero (0) if argument is not a numeric character
+         *
+         * */
+        if (isdigit(*code++) == 0)
+        {
+            return FALSE;
+        }
     }
 
     return TRUE;
 }
 
-/* Controllo sotto stringa del codice della regione  */
-bool ControlloRegione(char* cod, char* tmp)
+/**
+ * @brief controllo dei 5 sottovalori della regione
+ *
+ * @param cod codice della tessera
+ *
+ * @return TRUE se il codice della regione è giusto altrimenti FALSE
+ * */
+bool CheckRegion(char* code)
 {
-    strncpy(tmp, cod + 5, 5);
-    char line[6];
+    /* Dichiariamo il nome del file da aprire */
+    char* file_name = "../codiciRegioni";
+    /* Allochiamo spazio per il sottocodice corrispondente alla regione */
+    char* sub_code = (char *) malloc(CODE_LEN * sizeof(char));
 
-    FILE *fp;
-    fp = fopen("codiciRegioni", "r");
+    /* Copiamo all'interno di "sub_code" i 5 numeri del codice che corrispondono alla regione */
+    strncpy(sub_code, code + 5, 5);
 
-    while(fscanf(fp, "%s", line) == 1)
+    /* Apriamo il file contenente tutti i sottocodici delle regioni */
+    FILE* fp;
+    fp = fopen(file_name, "r");
+
+    /* creazione di una variabile booleana per l'esito della funzione "StringCodeIsWritten" */
+    bool controllo;
+
+    /* Controlliamo se il file è stato aperto correttamente */
+    if (fp == NULL)
     {
-        if(!strcmp(line, tmp))
+        printf("Errore nell'apertura del file!\n");
+        exit(EXIT_FAILURE);
+    }
+    /* Ritorno della funzione per il controllo se il codice esiste o meno */
+    controllo = StringCodeIsWritten(fp, sub_code);
+
+    /* Chiusura file */
+    fclose(fp);
+
+    /* Deallocazione della memoria */
+    free(sub_code);
+
+    return controllo;
+}
+
+/**
+ * @brief controlla se il codice si trova in un file
+ *
+ * @param fp Puntatore al file
+ * @param cod Codice da controllare
+ *
+ * @return TRUE se il codice si trova nel file altrimenti FALSE
+ *
+ * */
+bool StringCodeIsWritten(FILE* fp, char* code)
+{
+    /* Buffer di lettura da file */
+    char* buffer = (char *) malloc(CODE_LEN * sizeof(char));
+
+    /* Lettura da file finchè non è EOF */
+    while(fscanf(fp, "%s", buffer) != EOF)
+    {
+        /* Controllo della stringa se è uguale al buffer */
+        if(!strcmp(buffer, code))
         {
+            /* Deallocazione della memoria */
+            free(buffer);
             return TRUE;
         }
     }
+    /* Deallocazione della memoria */
+    free(buffer);
+
+    return FALSE;
+}
+
+/**
+ * @brief Controlla se il codice è già stato inserito, se non è inserito lo inserisce
+ *
+ * @param code Codice da inserire
+ *
+ * @return TRUE se è stato inserito correttamente altrimenti FALSE
+ * */
+bool CheckCode(char* code)
+{
+    /* Puntatore a file */
+    FILE* fp;
+
+    char* file_name = "../codice_tessera_sanitaria";
+
+    /* Apertura del file in lettura e scrittura */
+    fp = fopen(file_name, "r+");
+
+    /* Controllo se l'apertura del file è andata a buon fine */
+    if (fp == NULL)
+    {
+        printf("Errore nell'apertura del file!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    /* Controllo del codice se esiste già o meno */
+    if(!StringCodeIsWritten(fp, code))
+    {
+        /* Inserimento del codice nel file */
+        fprintf(fp, "%s\n", code);
+        printf("Codice inserito correttamente\n");
+
+        /* Chiusura file */
+        fclose(fp);
+        return TRUE;
+    }
+
+    /* Stampa nel caso il codice già esista */
+    printf("Codice già esistente!\n");
+
+    /* Chiusura file */
     fclose(fp);
 
     return FALSE;
