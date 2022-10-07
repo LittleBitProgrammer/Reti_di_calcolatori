@@ -3,9 +3,8 @@
 
 #include "bool_utility.h"
 
-bool InsertCode(char *);
-bool CheckRegion(char *);
-bool StringCodeIsWritten(FILE *, char *);
-bool CheckCode(char *);
+bool insertCode(char *);
+bool checkRegion(char *);
+bool isWrittenInFile(char *, char *);
 
 #endif //CODICE_FISCALE_H
