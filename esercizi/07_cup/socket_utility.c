@@ -203,3 +203,16 @@ void PrintClientIPV4(struct sockaddr_in* client_address, char *buffer, socklen_t
 
     printf(" hostname %s\n", host->h_name);
 }
+
+bool check_connection(int socket_file_description)
+{
+    bool is_connected;
+
+    if((is_connected = read(socket_file_description, NULL, 1)) == 0)
+    {
+        printf("Connessione interrotta\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return is_connected;
+}

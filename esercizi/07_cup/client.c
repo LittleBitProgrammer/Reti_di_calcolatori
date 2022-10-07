@@ -86,8 +86,6 @@ int main(int argc, char **argv)
     FullRead(socket_file_descriptor, size_list_buffer, sizeof(*size_list_buffer));
     char exam_list[size_list_buffer->rows][size_list_buffer->columns];
 
-    printf("exam_list: %lu\n", sizeof(exam_list));
-
     FullRead(socket_file_descriptor, exam_list, sizeof(exam_list));
 
     while(1)

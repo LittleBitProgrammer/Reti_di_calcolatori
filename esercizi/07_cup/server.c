@@ -161,6 +161,13 @@ int main(int argc, char** argv)
             {
                 /*
                  * ==========================
+                 * =    CHECK CONNECTION    =
+                 * ==========================
+                 * */
+                check_connection(connection_file_descriptor);
+
+                /*
+                 * ==========================
                  * =     COMMAND CHOICE     =
                  * ==========================
                  * */
@@ -183,6 +190,8 @@ int main(int argc, char** argv)
                     // CASO CMD_REFRESH
                 }
             }while(strcmp(command_buffer, commands[2]) != 0);
+
+
 
             // CASO CMD_EXIT
             fclose(exams_file);
