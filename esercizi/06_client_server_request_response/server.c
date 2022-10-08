@@ -117,6 +117,9 @@ int main()
 
             while(1)
             {
+                bzero(writer_buffer, WRITER_BUFFER_SIZE);
+                bzero(reader_buffer, READER_BUFFER_SIZE);
+
                 /*
                  * ==================================
                  * =          PRINT CLIENT          =

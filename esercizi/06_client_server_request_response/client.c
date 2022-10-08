@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <string.h>
 #include "socket_utility.h"
 
 #define WRITER_BUFFER_SIZE 4096
@@ -69,6 +70,9 @@ int main(int argc, char**argv) {
      * */
     ConnectIPV4(socket_file_descriptor, &server_address);
 
+    bzero(writer_buffer, WRITER_BUFFER_SIZE);
+    bzero(reader_buffer, READER_BUFFER_SIZE);
+
     printf("Inserire una stringa di caratteri qualsiasi:\n");
     while(1)
     {
@@ -113,7 +117,6 @@ int main(int argc, char**argv) {
                  * */
                 FullWrite(socket_file_descriptor, writer_buffer, WRITER_BUFFER_SIZE);
                 fflush(stdin);
-
             }
 
             /*
@@ -138,6 +141,10 @@ int main(int argc, char**argv) {
                     fprintf(stderr, "fputs error\n");
                     exit(EXIT_FAILURE);
                 }
+                /* Pulizia */
+                bzero(writer_buffer, WRITER_BUFFER_SIZE);
+                bzero(reader_buffer, READER_BUFFER_SIZE);
+
                 printf("\nInserire una stringa di caratteri qualsiasi:\n");
             }
         }
