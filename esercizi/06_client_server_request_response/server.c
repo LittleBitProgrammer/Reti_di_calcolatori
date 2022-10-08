@@ -9,7 +9,7 @@
 #include <string.h>
 #include "socket_utility.h"
 
-#define WRITER_BUFFER_SIZE 3
+#define WRITER_BUFFER_SIZE 128
 #define READER_BUFFER_SIZE 4096
 
 #define BACKLOG 1024
@@ -115,27 +115,35 @@ int main()
              * */
             close(listen_file_descriptor);
 
-            /*
-             * ==================================
-             * =          PRINT CLIENT          =
-             * ==================================
-             * */
-            PrintClientIPV4(&client_address, ip_buffer, INET6_ADDRSTRLEN);
+            while(1)
+            {
+                /*
+                 * ==================================
+                 * =          PRINT CLIENT          =
+                 * ==================================
+                 * */
+                PrintClientIPV4(&client_address, ip_buffer, INET6_ADDRSTRLEN);
 
-            /*
-             * ==================================
-             * =           FULL READ            =
-             * ==================================
-             * */
-            FullRead(connection_file_descriptor, reader_buffer, READER_BUFFER_SIZE);
-            snprintf(writer_buffer, WRITER_BUFFER_SIZE, "%lu\n", strlen(reader_buffer) - 1);
+                /*
+                 * ==================================
+                 * =           FULL READ            =
+                 * ==================================
+                 * */
+                if(FullRead(connection_file_descriptor, reader_buffer, READER_BUFFER_SIZE) > 0)
+                {
+                    break;
+                }
 
-            /*
-             * ==================================
-             * =           FULL WRITE           =
-             * ==================================
-             * */
-            FullWrite(connection_file_descriptor, writer_buffer, WRITER_BUFFER_SIZE);
+                snprintf(writer_buffer, WRITER_BUFFER_SIZE, "%lu\n", strlen(reader_buffer) - 1);
+
+                /*
+                 * ==================================
+                 * =           FULL WRITE           =
+                 * ==================================
+                 * */
+                FullWrite(connection_file_descriptor, writer_buffer, WRITER_BUFFER_SIZE);
+            }
+
             /*
              * ==================================
              * =       CLOSE CONNECTION         =
