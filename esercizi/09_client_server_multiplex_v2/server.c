@@ -26,23 +26,24 @@ int main()
      * =       Variables        =
      * ==========================
      * */
-    int                listen_file_descriptor;                /* Socket in listening */
-    int                connection_file_descriptor;            /* Socket for the connection with client */
-    int                temp_socket_file_descriptor;           /*  */
-    int                is_address_reusable = 1;               /* Flag for socket option */
-    struct sockaddr_in server_address;                        /* Structure for the server */
-    struct sockaddr_in client_address;                        /* Structure for the client */
-    char               writer_buffer[WRITER_BUFFER_SIZE];     /* Reader buffer */
-    char               reader_buffer[READER_BUFFER_SIZE];     /* Writer buffer */
-    socklen_t          client_size = sizeof(client_address);  /* Size del client */
-    int                max_file_descriptor;                   /* Max socket to monitor */
-    int                sockets_to_monitor[MAX_SOCKETS];       /* Array of sockets to monitor */
-    fd_set             monitor_reader_socket;                 /* Sockets to monitor while reading */
-    fd_set             copy_reader_socket;                    /*  */
-    size_t             ready_sockets;                         /* Number of ready sockets */
-    struct timeval     tm;                                    /* Time of activity session */
-    int                max_index;                             /*  */
-    char               ip_buffer[INET6_ADDRSTRLEN];           /*  */
+    int                 listen_file_descriptor;                /* Socket in listening */
+    int                 connection_file_descriptor;            /* Socket for the connection with client */
+    int                 temp_socket_file_descriptor;           /*  */
+    int                 is_address_reusable = 1;               /* Flag for socket option */
+    struct sockaddr_in  server_address;                        /* Structure for the server */
+    struct sockaddr_in  client_address;                        /* Structure for the client */
+    struct sockaddr_in  sockets_info[MAX_SOCKETS];             /*  */
+    char                writer_buffer[WRITER_BUFFER_SIZE];     /* Reader buffer */
+    char                reader_buffer[READER_BUFFER_SIZE];     /* Writer buffer */
+    socklen_t           client_size = sizeof(client_address);  /* Size del client */
+    int                 max_file_descriptor;                   /* Max socket to monitor */
+    int                 sockets_to_monitor[MAX_SOCKETS];       /* Array of sockets to monitor */
+    fd_set              monitor_reader_socket;                 /* Sockets to monitor while reading */
+    fd_set              copy_reader_socket;                    /*  */
+    size_t              ready_sockets;                         /* Number of ready sockets */
+    struct timeval      tm;                                    /* Time of activity session */
+    int                 max_index;                             /*  */
+    char                ip_buffer[INET6_ADDRSTRLEN];           /*  */
 
 
     /*
@@ -91,8 +92,6 @@ int main()
      * */
     signal(SIGCHLD, SIG_IGN);
 
-
-
     max_file_descriptor = listen_file_descriptor;
     max_index = -1;
 
@@ -102,7 +101,7 @@ int main()
     FD_ZERO(&monitor_reader_socket);
     FD_SET(listen_file_descriptor, &monitor_reader_socket);
 
-    tm.tv_sec = 3 * 60;
+    tm.tv_sec = 10;
     tm.tv_usec = 0;
 
     /*
@@ -122,9 +121,8 @@ int main()
         }
         else if(ready_sockets == 0)
         {
-            //TODO da rivedere
-            fprintf(stderr,"Sessione scaduta\n");
-            break;
+            /* Refresh in caso non arrivi nessun client */
+            continue;
         }
         else
         {
@@ -141,9 +139,11 @@ int main()
                     if(sockets_to_monitor[i] < 0)
                     {
                         sockets_to_monitor[i] = connection_file_descriptor;
+                        sockets_info[i] = client_address;
                         break;
                     }
                 }
+
                 if(i == MAX_SOCKETS)
                 {
                     fprintf(stderr, "Troppi client\n");
@@ -186,13 +186,13 @@ int main()
                         FD_CLR(temp_socket_file_descriptor, &monitor_reader_socket);
                         sockets_to_monitor[i] = -1;
 
-                        inet_ntop(AF_INET, &(client_address.sin_addr),ip_buffer,INET6_ADDRSTRLEN);
-                        fprintf(stderr, "Disconnected client: \nIP:PORT\t<%s:%d>\n", ip_buffer, ntohs(client_address.sin_port));
+                        inet_ntop(AF_INET, &(sockets_info[i].sin_addr),ip_buffer,INET6_ADDRSTRLEN);
+                        fprintf(stderr, "Disconnected client: \nIP:PORT\t<%s:%d>\n", ip_buffer, ntohs(sockets_info[i].sin_port));
                     }
                     else
                     {
                         #ifdef LOG
-                        PrintClientIPV4(&client_address, "Request from");
+                        PrintClientIPV4(&sockets_info[i], "Request from");
                         #endif
                         snprintf(writer_buffer, WRITER_BUFFER_SIZE, "%lu\n", strlen(reader_buffer) - 1);
                         if((FullWrite(temp_socket_file_descriptor, writer_buffer, WRITER_BUFFER_SIZE)) > 0)
@@ -202,7 +202,7 @@ int main()
                         else
                         {
                             #ifdef LOG
-                            PrintClientIPV4(&client_address, "Response to");
+                            PrintClientIPV4(&sockets_info[i], "Response to");
                             #endif
                         }
                     }
