@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "socket_utility.h"
+#include "number_utility.h"
 
 #define WRITER_BUFFER_SIZE 128
 #define READER_BUFFER_SIZE 4096
@@ -37,6 +38,7 @@ int main()
     fd_set             monitor_reader_socket;                 /* Sockets to monitor while reading */
     size_t             ready_sockets;                         /* Number of ready sockets */
     struct timeval     tm;                                    /* Time of activity session */
+    size_t             n_read;                                /*  */
 
     /*
      * ==================================
@@ -90,14 +92,94 @@ int main()
 
     /*
      * ==================================
-     * =             ENDLESS            =
+     * =            ENDLESS             =
      * ==================================
      * */
     for(;;)
     {
+        int i;
+        tm.tv_sec = 3 * 60;
+        FD_ZERO(&monitor_reader_socket);
 
+        /*
+         * ==================================
+         * =       INIT_SOCKETS_BITS        =
+         * ==================================
+         * */
+        for(i = listen_file_descriptor; i <= max_file_descriptor; i++)
+        {
+            if(sockets_to_monitor[i] != -1)
+            {
+                FD_SET(i, &monitor_reader_socket);
+            }
+        }
+
+        /*
+         * =================================
+         * =            SELECT             =
+         * =================================
+         * */
+        if((ready_sockets = select(max_file_descriptor + 1, &monitor_reader_socket, NULL, NULL, &tm)) < 0)
+        {
+            fprintf(stderr, "Errore nella select\n");
+            exit(EXIT_FAILURE);
+        }
+        else if(ready_sockets == 0)
+        {
+            //TODO da rivedere
+            fprintf(stderr,"Sessione scaduta\n");
+            break;
+        }
+        else
+        {
+            if(FD_ISSET(listen_file_descriptor, &monitor_reader_socket))
+            {
+                ready_sockets--;
+                connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
+                sockets_to_monitor[connection_file_descriptor] = 1;
+
+                if(max_file_descriptor < connection_file_descriptor)
+                {
+                    max_file_descriptor = connection_file_descriptor;
+                }
+            }
+
+            i = listen_file_descriptor;
+
+            while(ready_sockets != 0)
+            {
+                i++;
+                if(sockets_to_monitor[i] == -1)
+                {
+                    continue;
+                }
+
+                // TODO: Popolare con bzero();
+                // TODO: Print delle informazioni client
+                if(FD_ISSET(i, &monitor_reader_socket))
+                {
+                    ready_sockets--;
+                    if((n_read = FullRead(i, reader_buffer, READER_BUFFER_SIZE)) > 0)
+                    {
+                        sockets_to_monitor[i] = -1;
+                        if(max_file_descriptor == i)
+                        {
+                            while(sockets_to_monitor[--i] == -1);
+                            max_file_descriptor = i;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        snprintf(writer_buffer, WRITER_BUFFER_SIZE, "%lu\n", strlen(reader_buffer) - 1);
+                        FullWrite(i, writer_buffer, WRITER_BUFFER_SIZE);
+                    }
+                }
+            }
+        }
     }
 
     /* Irraggiungibile */
     exit(EXIT_SUCCESS);
 }
+

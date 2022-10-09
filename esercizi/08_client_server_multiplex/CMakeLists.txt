@@ -7,4 +7,4 @@ set(CMAKE_BUILD_TYPE Debug)
 include_directories(.)
 
 add_executable(client client.c socket_utility.c)
-add_executable(server server.c socket_utility.c signal_handler.c)
+add_executable(server server.c socket_utility.c signal_handler.c number_utility.c)

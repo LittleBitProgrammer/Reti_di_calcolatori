@@ -77,7 +77,7 @@ int main(int argc, char**argv) {
     printf("Inserire una stringa di caratteri qualsiasi:\n");
     while(1)
     {
-        tm.tv_sec = 3 * 60; /* Tempo della sessione */
+        tm.tv_sec = 15 * 60; /* Tempo della sessione */
         FD_ZERO(&monitor_reader_socket);
         FD_SET(STDIN_FILENO, &monitor_reader_socket);
 
