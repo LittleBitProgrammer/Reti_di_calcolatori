@@ -179,20 +179,20 @@ size_t FullRead(int file_descriptor, void *buffer, size_t ch_to_read)
     return(n_left);
 }
 
-void PrintClientIPV4(struct sockaddr_in* client_address, char *buffer, socklen_t buffer_size)
+void PrintClientIPV4(struct sockaddr_in* client_address, char* type_of_request)
 {
     struct hostent *host;
-    inet_ntop(AF_INET,&(client_address->sin_addr),buffer,buffer_size);
+    char buffer[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET,&(client_address->sin_addr),buffer,INET6_ADDRSTRLEN);
 
     /* Stampa informazioni del client */
-    printf("Request from host %s, port %d,", buffer, ntohs(client_address->sin_port));
+    printf("%s host %s, port %d,", type_of_request, buffer, ntohs(client_address->sin_port));
 
     if((host = gethostbyaddr((const char *) &(client_address->sin_addr), sizeof(client_address->sin_addr), client_address->sin_family)) == NULL)
     {
         herror("Reverse DNS error: ");
         exit(EXIT_FAILURE);
     }
-
 
     printf(" hostname %s\n", host->h_name);
 }

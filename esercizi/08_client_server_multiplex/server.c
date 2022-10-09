@@ -136,6 +136,9 @@ int main()
             {
                 ready_sockets--;
                 connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
+
+                PrintClientIPV4(&client_address, "Connected to");
+
                 sockets_to_monitor[connection_file_descriptor] = 1;
 
                 if(max_file_descriptor < connection_file_descriptor)
