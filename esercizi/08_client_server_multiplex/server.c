@@ -11,6 +11,7 @@
 
 #define WRITER_BUFFER_SIZE 128
 #define READER_BUFFER_SIZE 4096
+#define MAX_SOCKETS 64
 
 #define BACKLOG 1024
 
@@ -21,16 +22,21 @@ int main()
      * =       Variables        =
      * ==========================
      * */
-    int                listen_file_descriptor;               /* Socket in listening */
-    int                connection_file_descriptor;           /* Socket for the connection with client */
-    int                is_address_reusable = 1;              /* Flag for socket option */
-    struct sockaddr_in server_address;                       /* Structure for the server */
-    struct sockaddr_in client_address;                       /* Structure for the client */
-    char               writer_buffer[WRITER_BUFFER_SIZE];    /* Reader buffer */
-    char               reader_buffer[READER_BUFFER_SIZE];    /* Writer buffer */
-    char               ip_buffer[INET6_ADDRSTRLEN];          /* Buffer of IP address */
-    socklen_t          client_size = sizeof(client_address); /* Size del client */
-    pid_t              process_id;                           /* ID of forked process */
+    int                listen_file_descriptor;                /* Socket in listening */
+    int                connection_file_descriptor;            /* Socket for the connection with client */
+    int                is_address_reusable = 1;               /* Flag for socket option */
+    struct sockaddr_in server_address;                        /* Structure for the server */
+    struct sockaddr_in client_address;                        /* Structure for the client */
+    char               writer_buffer[WRITER_BUFFER_SIZE];     /* Reader buffer */
+    char               reader_buffer[READER_BUFFER_SIZE];     /* Writer buffer */
+    char               ip_buffer[INET6_ADDRSTRLEN];           /* Buffer of IP address */
+    socklen_t          client_size = sizeof(client_address);  /* Size del client */
+    pid_t              process_id;                            /* ID of forked process */
+    int                max_file_descriptor;                   /* Max socket to monitor */
+    int                sockets_to_monitor[MAX_SOCKETS];       /* Array of sockets to monitor */
+    fd_set             monitor_reader_socket;                 /* Sockets to monitor while reading */
+    size_t             ready_sockets;                         /* Number of ready sockets */
+    struct timeval     tm;                                    /* Time of activity session */
 
     /*
      * ==================================
@@ -76,6 +82,12 @@ int main()
      * */
     signal(SIGCHLD, SIG_IGN);
 
+    /* Initialize all members of the array to -1 */
+    memset(sockets_to_monitor, -1, sizeof(sockets_to_monitor));
+
+    max_file_descriptor = listen_file_descriptor;
+    sockets_to_monitor[max_file_descriptor] = 1;
+
     /*
      * ==================================
      * =             ENDLESS            =
@@ -83,88 +95,7 @@ int main()
      * */
     for(;;)
     {
-        /*
-         * ==================================
-         * =             ACCEPT             =
-         * ==================================
-         * */
-        connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
 
-        /*
-         * ==================================
-         * =              FORK              =
-         * ==================================
-         * */
-        if((process_id = fork()) < 0)
-        {
-            perror("Fork error: ");
-            exit(EXIT_FAILURE);
-        }
-
-        /*
-         * ==================================
-         * =             CHILD              =
-         * ==================================
-         * */
-        if(process_id == 0)
-        {
-            /*
-             * ==================================
-             * =          CLOSE LISTEN          =
-             * ==================================
-             * */
-            close(listen_file_descriptor);
-
-            while(1)
-            {
-                bzero(writer_buffer, WRITER_BUFFER_SIZE);
-                bzero(reader_buffer, READER_BUFFER_SIZE);
-
-                /*
-                 * ==================================
-                 * =          PRINT CLIENT          =
-                 * ==================================
-                 * */
-                PrintClientIPV4(&client_address, ip_buffer, INET6_ADDRSTRLEN);
-
-                /*
-                 * ==================================
-                 * =           FULL READ            =
-                 * ==================================
-                 * */
-                if(FullRead(connection_file_descriptor, reader_buffer, READER_BUFFER_SIZE) > 0)
-                {
-                    break;
-                }
-
-                snprintf(writer_buffer, WRITER_BUFFER_SIZE, "%lu\n", strlen(reader_buffer) - 1);
-
-                /*
-                 * ==================================
-                 * =           FULL WRITE           =
-                 * ==================================
-                 * */
-                FullWrite(connection_file_descriptor, writer_buffer, WRITER_BUFFER_SIZE);
-            }
-
-            /*
-             * ==================================
-             * =       CLOSE CONNECTION         =
-             * ==================================
-             * */
-            close(connection_file_descriptor);
-
-            exit(EXIT_SUCCESS);
-        }
-        else
-        {
-            /*
-             * ==================================
-             * =       CLOSE CONNECTION         =
-             * ==================================
-             * */
-            close(connection_file_descriptor);
-        }
     }
 
     /* Irraggiungibile */
