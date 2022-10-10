@@ -15,8 +15,12 @@
 
 #define BACKLOG 1024
 
+
 int main()
 {
+    /* Rende STDOUT non bufferizzato */
+    (void)setvbuf(stdout, NULL, _IONBF, 0);
+
     /*
      * ==========================
      * =       Variables        =
@@ -28,6 +32,8 @@ int main()
     struct sockaddr_in  server_address;                        /* Structure for the server */
     struct sockaddr_in  client_address;                        /* Structure for the client */
     socklen_t           client_size = sizeof(client_address);  /* Size del client */
+
+
 
     /*
      * ==================================
@@ -87,7 +93,10 @@ int main()
     {
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
 
-        if(pthread_create(&thread_id[i++], NULL, server_handler, &connection_file_descriptor) != 0)
+        PrintClientIPV4(&client_address, "Connected to");
+        arg_struct args_struct = {.arg1 = connection_file_descriptor, .arg2 = client_address};
+
+        if(pthread_create(&thread_id[i++], NULL, server_handler, &args_struct) != 0)
         {
             fprintf(stderr, "Failed to create thread \n");
             break;
