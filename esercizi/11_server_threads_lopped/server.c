@@ -13,7 +13,7 @@
 #define WRITER_BUFFER_SIZE 128
 #define READER_BUFFER_SIZE 4096
 
-#define BACKLOG 1024
+#define BACKLOG 50
 
 
 int main()
@@ -102,10 +102,10 @@ int main()
             break;
         }
 
-        if(i >= 50)
+        if(i >= BACKLOG)
         {
             i = 0;
-            while (i < 50)
+            while (i < BACKLOG)
             {
                 if (pthread_join(thread_id[i++], NULL) != 0)
                 {
