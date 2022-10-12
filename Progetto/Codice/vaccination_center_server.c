@@ -88,8 +88,25 @@ int main(int argc, char **argv)
      * */
     server_address.sin_port = htons(6463);
 
+    /*
+     * ==================================
+     * =         SOCKET OPTION          =
+     * ==================================
+     * */
+
+    /* La funzione "@setsockopt" ci permette di configurare l'opzione specificata dal parametro "@option_name" (il terzo argomento) al livello protocollo
+     * specificato dall'argomento "@level" (secondo argomento) al valore puntato dall'argomento "@option_value" (quarto argomento) per il socket
+     * associato con il file descriptor specificato dall'argomento "@socket" (primo argomento).
+     * In particolare, attraverso la seguente funzione stiamo configurando al livello socket che il server in questione dovrà riutilizzare l'indirizzo
+     * locale durante una nuova esecuzione del processo server
+     * */
+    setsockopt(listen_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &is_address_reusable, sizeof(is_address_reusable));
+
+    /*
+     * ==================================
+     * =               BIND             =
+     * ==================================
+     * */
     
-
-
     return 0;
 }
