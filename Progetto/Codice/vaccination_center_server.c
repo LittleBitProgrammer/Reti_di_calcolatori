@@ -25,7 +25,8 @@ int main(int argc, char **argv)
      * ==========================
      * */
 
-    /* Inizializziamo il valore del file descriptor, che verrà configurato in modalità ascolto, sfruttando la funzione definita
+    /*
+     * Inizializziamo il valore del file descriptor, che verrà configurato in modalità ascolto, sfruttando la funzione definita
      * nella libreria "@sockets_utilities.h". In questo modo, associamo il file descriptor a una socket
      * */
     listen_file_descriptor = Socket(AF_INET, SOCK_STREAM, 0);
@@ -44,19 +45,22 @@ int main(int argc, char **argv)
      * ==================================
      * */
 
-    /* Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale costruire un Endpoint identificabile sulla rete.
+    /*
+     * Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale costruire un Endpoint identificabile sulla rete.
      * La struttura "@sockaddr_in" è composta dai seguenti campi:
      *      @sin_family:      Famiglia degli indirizzi utilizzati (AF_INET - AF_INET6 - ecc...)
      *      @sin_port:        Porta in Network order
      *      @sin_addr.s_addr: Indirizzo IP in Network order
      * */
 
-    /* Inizializziamo il campo famiglia della struttura "@sockaddr_in" del server con il valore "@AF_INET". In questo modo, specifichiamo
+    /*
+     * Inizializziamo il campo famiglia della struttura "@sockaddr_in" del server con il valore "@AF_INET". In questo modo, specifichiamo
      * che il nostro server utilizzerà un indirizzo del tipo "IPv4"
      * */
     server_address.sin_family = AF_INET;
 
-    /* Inizializziamo il campo indirizzo della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
+    /*
+     * Inizializziamo il campo indirizzo della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
      * "@htonl()" la quale accetterà come argomento la costante "@INADDR_ANY". La funzione utilizzata permette di trasformare un
      * indirizzo in formato host (ad esempio: 127.0.0.1) in formato Network order. Tale azione si rende necessaria in quanto le
      * informazioni sulla rete viaggiano in formato BIG ENDIAN, mentre alcuni host memorizzano le informazioni in formato
@@ -78,7 +82,8 @@ int main(int argc, char **argv)
      * */
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    /* Inizializziamo il campo porta della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
+    /*
+     * Inizializziamo il campo porta della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
      * "@htons()" la quale accetterà come argomento un intero rappresentante la porta desiderata su cui il server deve rimanere
      * in ascolto. Le porte sono interi a 16 bit da 0 a 65535, raggruppate nel seguente modo:
      *      - da 0 a 1023, porte riservate ai processi root;
@@ -94,7 +99,8 @@ int main(int argc, char **argv)
      * ==================================
      * */
 
-    /* La funzione "@setsockopt" ci permette di configurare l'opzione specificata dal parametro "@option_name" (il terzo argomento) al livello protocollo
+    /*
+     * La funzione "@setsockopt" ci permette di configurare l'opzione specificata dal parametro "@option_name" (il terzo argomento) al livello protocollo
      * specificato dall'argomento "@level" (secondo argomento) al valore puntato dall'argomento "@option_value" (quarto argomento) per il socket
      * associato con il file descriptor specificato dall'argomento "@socket" (primo argomento).
      * In particolare, attraverso la seguente funzione stiamo configurando al livello socket che il server in questione dovrà riutilizzare l'indirizzo
@@ -104,9 +110,17 @@ int main(int argc, char **argv)
 
     /*
      * ==================================
-     * =               BIND             =
+     * =              BIND              =
      * ==================================
      * */
+
+    /*
+     * Attraverso la seguente funzione associamo il file descriptor che vogliamo configurare in modalità ascolto con l'Endpoint
+     * costruito precedentemente
+     * */
+    BindIPV4(listen_file_descriptor, &server_address);
+
     
+
     return 0;
 }

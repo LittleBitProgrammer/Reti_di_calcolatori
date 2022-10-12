@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
 #include "sockets_utility.h"
 
 /**
@@ -21,9 +20,11 @@ int Socket(int address_family, int transport_type, int transport_subtype)
     /* File descriptor da inizializzare al valore di ritorno della chiamata "@socket()" */
     int file_descriptor;
 
-    /* In caso di successo, la funzione "@socket()" ritornerà un valore maggiore o uguale di 0, ovvero il valore del
+    /*
+     * In caso di successo, la funzione "@socket()" ritornerà un valore maggiore o uguale di 0, ovvero il valore del
      * file descriptor associata alla socket creata. In caso di errore viene ritornato -1 ed errno (numero dell'ultimo errore)
-     * viene configurato per indicare quest'ultimo */
+     * viene configurato per indicare quest'ultimo
+     * */
     if((file_descriptor = socket(address_family, transport_type, transport_subtype)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
@@ -32,4 +33,26 @@ int Socket(int address_family, int transport_type, int transport_subtype)
     }
 
     return file_descriptor;
+}
+
+/**
+ * @brief Questa funzione serve ad asscoiare un Endpoint ad un file descriptor specifico "@file_descriptor_to_bind" e "@endpoint"
+ *
+ * @param file_descriptor_to_bind File descrpitor del socket da associare ad una struttura di tipo "@sockaddr_in"
+ * @param endpoint Indirizzo da associare al socket "@file_descriptor_to_bind"
+ * */
+void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in* endpoint)
+{
+    /*
+     * Attraverso la funzione "@bind()" associamo un file descriptor a un endpoint di tipo "@sockaddr", in modo tale da ereditare
+     * le caratteristiche dell'indirizzo rappresentato dalla struttura passata come secondo argomento. In particolare sfruttiamo
+     * il valore di ritorno della "@bind()" per la gestione degli errori, in quanto, quest'ultima ritornerà 0 in caso di successo
+     * oppure -1 in caso di errore, configurando errno (numero dell'ultimo errore) per indicare l'errore
+     * */
+    if(bind(file_descriptor_to_bind, (struct sockaddr*)endpoint, sizeof(*endpoint)) < 0)
+    {
+        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+        perror("Bind to endpoint error: ");
+        exit(EXIT_FAILURE);
+    }
 }
