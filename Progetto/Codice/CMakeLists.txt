@@ -19,7 +19,7 @@ add_executable(client_amministratore administrator_client.c)
 add_executable(client_revisore reviser_client.c)
 
 # - server centro vaccinale
-add_executable(server_centro_vaccinale vaccination_center_server.c lib/thread_utility.c lib/thread_utility.h)
+add_executable(server_centro_vaccinale vaccination_center_server.c lib/thread_utility.c lib/thread_utility.h lib/sockets_utility.c lib/sockets_utility.h)
 
 # - server centrale
 add_executable(server_centrale central_server.c)
