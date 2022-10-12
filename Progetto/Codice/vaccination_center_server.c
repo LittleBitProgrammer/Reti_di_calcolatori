@@ -1,6 +1,7 @@
 #include <stdio.h>
-#include <netinet/in.h>           /* Importata per utilizzare la struttura "@sockaddr_in" */
+#include <stdlib.h>               /* Importata per utilizzare la funzione "@exit()" */
 #include <string.h>               /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
+#include <netinet/in.h>           /* Importata per utilizzare la struttura "@sockaddr_in" */
 #include "lib/thread_utility.h"   /* Importata per utilizzare costanti e funzioni legate alla tecnologia thread */
 #include "lib/sockets_utility.h"  /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 
@@ -122,7 +123,7 @@ int main(int argc, char **argv)
 
     /*
      * ==================================
-     * =              LISTEN            =
+     * =             LISTEN             =
      * ==================================
      * */
 
@@ -132,7 +133,24 @@ int main(int argc, char **argv)
      * */
     Listen(listen_file_descriptor, DEFAULT_BACKLOG_SIZE);
 
-    
+    /*
+     * ==================================
+     * =            ENDLESS             =
+     * ==================================
+     * */
+    for(;;)
+    {
+        /*
+         * =================================
+         * =            ACCEPT             =
+         * =================================
+         * */
 
-    return 0;
+        /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
+        connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
+
+
+    }
+
+    exit(EXIT_FAILURE);
 }

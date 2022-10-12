@@ -22,7 +22,7 @@ int Socket(int address_family, int transport_type, int transport_subtype)
 
     /*
      * In caso di successo, la funzione "@socket()" ritornerà un valore maggiore o uguale di 0, ovvero il valore del
-     * file descriptor associata alla socket creata. In caso di errore viene ritornato -1 ed errno (numero dell'ultimo errore)
+     * file descriptor associato alla socket creata. In caso di errore viene ritornato -1 ed errno (numero dell'ultimo errore)
      * viene configurato per indicare quest'ultimo
      * */
     if((file_descriptor = socket(address_family, transport_type, transport_subtype)) < 0)
@@ -77,4 +77,35 @@ void Listen(int file_descriptor, int backlog_size)
         perror("Error while configuring the socket in listening: ");
         exit(EXIT_FAILURE);
     }
+}
+
+/**
+ * @brief La funzione esegue la Three way Handshake con il client che ne fa espressamente richiesta
+ *
+ * @param listen_file_descriptor File descriptor configurato in modalità ascolto sul quale arriverà la nuova richiesta di connessione
+ * @param client_address Parametro di output, utile ad identificare l'indirizzo del client
+ * @param client_size Parametro di output rappresentante la dimensione della struttura utilizzata per rappresentare il client
+ *
+ * @return File descriptor avente le stesse proprietà del "@listen_file_descriptor" utile a gestire la nuova connessione e a servire il client
+ * */
+int AcceptIPV4(int listen_file_descriptor, struct sockaddr_in* client_address, socklen_t* client_size)
+{
+    /* File descriptor da inizializzare al valore di ritorno della chiamata "@accept()" */
+    int connection_file_descriptor;
+
+    /*
+     * Attraverso la seguente funzione procediamo con l'eseguire e finalizzare la procedura Three way Handshake. In questo modo
+     * andiamo a stabilire una connessione con il client che ne ha fatto richiesta. Inoltre, sfruttiamo il secondo e il terzo parametro
+     * per ritornare le informazioni inerenti al client. Ritornerà un valore maggiore o uguale di 0, ovvero il valore del
+     * file descriptor associato alla socket. In caso di errore viene ritornato -1 ed errno (numero dell'ultimo errore)
+     * viene configurato per indicare quest'ultimo
+     * */
+    if((connection_file_descriptor = accept(listen_file_descriptor, (struct sockaddr *)client_address, client_size)) < 0)
+    {
+        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+        perror("Error while trying to accept a new connection: ");
+        exit(EXIT_FAILURE);
+    }
+
+    return connection_file_descriptor;
 }

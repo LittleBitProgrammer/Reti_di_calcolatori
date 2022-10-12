@@ -36,4 +36,15 @@ void BindIPV4(int, struct sockaddr_in*);
  * */
 void Listen(int, int);
 
+/**
+ * @brief La funzione esegue la Three way Handshake con il client che ne fa espressamente richiesta
+ *
+ * @param listen_file_descriptor File descriptor configurato in modalità ascolto sul quale arriverà la nuova richiesta di connessione
+ * @param client_address Parametro di output, utile ad identificare l'indirizzo del client
+ * @param client_size Parametro di output rappresentante la dimensione della struttura utilizzata per rappresentare il client
+ *
+ * @return File descriptor avente le stesse proprietà del "@listen_file_descriptor" utile a gestire la nuova connessione e a servire il client
+ * */
+int AcceptIPV4(int, struct sockaddr_in*, socklen_t*);
+
 #endif // SOCKETS_UTILITY_H
