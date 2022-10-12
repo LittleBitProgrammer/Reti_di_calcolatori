@@ -5,7 +5,9 @@
 #ifndef SOCKETS_UTILITY_H
 #define SOCKETS_UTILITY_H
 
-#include <arpa/inet.h>    /* Importata per utilizzare le strutture di tipo "@sockaddr_in" */
+#include <arpa/inet.h>              /* Importata per utilizzare le strutture di tipo "@sockaddr_in" */
+#define DEFAULT_BACKLOG_SIZE 50     /* Costante volta a definire la dimensione di default massima delle backlog dei
+                                     * servers definiti nel sistema GreenPass */
 
 /**
  * @brief Funzione che permette la creazione di un file descriptor associato ad una socket
@@ -25,5 +27,13 @@ int Socket(int, int, int);
  * @param endpoint Indirizzo da associare al socket "@file_descriptor_to_bind"
  * */
 void BindIPV4(int, struct sockaddr_in*);
+
+/**
+ * @brief La funzione configura "@file_descriptor", passato in input, in ascolto con una coda delle richieste pari a "@backlog_size"
+ *
+ * @param file_descriptor File descriptor del socket da configurare in modalità ascolto
+ * @param backlog_size Coda delle connessioni in pendenza
+ * */
+void Listen(int, int);
 
 #endif // SOCKETS_UTILITY_H

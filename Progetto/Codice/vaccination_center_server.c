@@ -120,6 +120,18 @@ int main(int argc, char **argv)
      * */
     BindIPV4(listen_file_descriptor, &server_address);
 
+    /*
+     * ==================================
+     * =              LISTEN            =
+     * ==================================
+     * */
+
+    /*
+     * Attraverso la seguente funzione configuriamo il file descriptor del socket passato in input in modalità ascolto, con
+     * una coda delle connessioni in pendenza pari al valore di default, definito nella libreria "@socket_utility.h"
+     * */
+    Listen(listen_file_descriptor, DEFAULT_BACKLOG_SIZE);
+
     
 
     return 0;

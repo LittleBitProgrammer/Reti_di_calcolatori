@@ -56,3 +56,25 @@ void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in* endpoint)
         exit(EXIT_FAILURE);
     }
 }
+
+/**
+ * @brief La funzione configura "@file_descriptor", passato in input, in ascolto con una coda delle richieste pari a "@backlog_size"
+ *
+ * @param file_descriptor File descriptor del socket da configurare in modalità ascolto
+ * @param backlog_size Coda delle connessioni in pendenza
+ * */
+void Listen(int file_descriptor, int backlog_size)
+{
+    /*
+     * Attraverso la funzione "@listen()" configuriamo il socket, identificato dal "@file_descriptor" passato in input, in modalità
+     * ascolto. In questo modo il socket sarà pronto per accettare nuove connessioni. In particolare sfruttiamo
+     * il valore di ritorno della "@listen()" per la gestione degli errori, in quanto, quest'ultima ritornerà 0 in caso di successo
+     * oppure -1 in caso di errore, configurando errno (numero dell'ultimo errore) per indicare l'errore
+     * */
+    if(listen(file_descriptor, backlog_size) < 0)
+    {
+        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+        perror("Error while configuring the socket in listening: ");
+        exit(EXIT_FAILURE);
+    }
+}
