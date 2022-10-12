@@ -2,7 +2,11 @@
 
 int main(int argc, char **argv)
 {
-    printf("Client vaccinato\n");
+    /* ==========================
+     * =       Variables        =
+     * ==========================
+     */
+
 
     return 0;
 }
