@@ -141,6 +141,12 @@ int main(int argc, char **argv)
      * ==================================
      * */
 
+    /*
+     * Di seguito, andremo ad eseguire una richiesta Daytime al server centro vaccinale, in modo tale da reperire la data
+     * corrente del server, la quale ci servirà per verificare che la data inserita dall'utente non sia superiore alla data
+     * odierna
+     * */
+
     /* Copiamo la stringa "CMD_DTM" all'interno dell'array di caratteri "@command_writer_buffer" */
     strcpy(command_writer_buffer, "CMD_DTM");
 
