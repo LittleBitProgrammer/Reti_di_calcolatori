@@ -1,5 +1,6 @@
-#include <stdio.h>
+#include <stdio.h>                /* Importata per utilizzare la funzione "@perror()" */
 #include <stdlib.h>               /* Importata per utilizzare la funzione "@exit()" */
+#include <errno.h>                /* Importata per utilizzare la variabile globale "@errno" */
 #include <string.h>               /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
 #include <netinet/in.h>           /* Importata per utilizzare la struttura "@sockaddr_in" */
 #include "lib/thread_utility.h"   /* Importata per utilizzare costanti e funzioni legate alla tecnologia thread */
@@ -11,15 +12,15 @@ int main(int argc, char **argv)
      * =       VARIABLES        =
      * ==========================
      * */
-    int                listen_file_descriptor;                  /* File descriptor del socket in ascolto sul server */
-    int                connection_file_descriptor;              /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
-    int                is_address_reusable = 1;                 /* Valore intero che permette di configurare il server per il riutilizzo di un indirizzo
-                                                                 * su cui è già stata effettuata la "@bind()" */
-    struct sockaddr_in server_address;                          /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del server */
-    struct sockaddr_in client_address;                          /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del client */
-    socklen_t          client_size = sizeof(client_address);    /* Grandezza espressa in termini di byte dell'Endpoint client */
-    int                i;                                       /* Variabile utilizzata da indice per i costrutti iterativi */
-    pthread_t          threads_id[MAX_THREADS];                 /* Array contenente i descrittori dei threads utilizzati dal server */
+    int                listen_file_descriptor;                   /* File descriptor del socket in ascolto sul server */
+    int                connection_file_descriptor;               /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    int                is_address_reusable = 1;                  /* Valore intero che permette di configurare il server per il riutilizzo di un indirizzo
+                                                                  * su cui è già stata effettuata la "@bind()" */
+    struct sockaddr_in server_address;                           /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del server */
+    struct sockaddr_in client_address;                           /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del client */
+    socklen_t          client_size = sizeof(client_address);     /* Grandezza espressa in termini di byte dell'Endpoint client */
+    int                i = 0;                                    /* Variabile utilizzata da indice per i costrutti iterativi */
+    pthread_t          threads_id[MAX_THREADS];                  /* Array contenente i descrittori dei threads utilizzati dal server */
 
     /* ==========================
      * =    SOCKET CREATION     =
@@ -149,7 +150,56 @@ int main(int argc, char **argv)
         /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
 
+        /*
+         * =================================
+         * =       THREAD  CREATION        =
+         * =================================
+         * */
 
+        /*
+         * Sfruttiamo la funzione "@pthread_create" per eseguire un nuovo thread nel processo chiamante. Quest'ultima accetterà in
+         * input l'indirizzo ID del thread, attributi di default, la funzione handler e l'indirizzo del parametro di input. Inoltre,
+         * tale funzione, ritornerà 0 in caso di successo e un valore diverso da 0 corrispondente al numero dell'errore, per tal
+         * motivo si è deciso di assegnare ad "@errno" il valore di ritorno della funzione.
+         * A ogni nuova iterazione il server creerà un thread per servire il client connesso, in questo modo evitiamo di bloccare
+         * il server nel caso in cui il client invii una sequenza di byte malevoli, in quanto l'unico processo che verrà bloccato
+         * sarà quello del thread, permettendo agli altri client di essere serviti
+         * */
+        if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &connection_file_descriptor)) != 0)
+        {
+            perror("Thread creation error: ");
+            break;
+        }
+
+        /*
+         * =================================
+         * =       THREAD  CREATION        =
+         * =================================
+         * */
+
+        /*
+         * Tale blocco di codice servirà a permettere al thread master di aspettare che gli altri thread generati, attraverso una "@pthread_create()",
+         * che abbiano finito di eseguire le loro istruzioni
+         * */
+        if(i >= DEFAULT_BACKLOG_SIZE)
+        {
+            i = 0;
+
+            while(i < DEFAULT_BACKLOG_SIZE)
+            {
+                /*
+                 * La funzione "@pthread_join()" ritornerà 0 in caso di successo e un valore diverso da 0 corrispondente al numero dell'errore, per tal
+                 * motivo si è deciso di assegnare ad "@errno" il valore di ritorno della funzione
+                 * */
+                if((errno = pthread_join(threads_id[i++], NULL)) != 0)
+                {
+                    perror("Failed to join thread: ");
+                    break;
+                }
+            }
+
+            i = 0;
+        }
     }
 
     exit(EXIT_FAILURE);
