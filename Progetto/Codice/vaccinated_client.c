@@ -121,11 +121,33 @@ int main(int argc, char **argv)
      * =           CONNECTION           =
      * ==================================
      * */
+
+    /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
     ConnectIPV4(client_file_descriptor, &server_address);
 
-    
+    /*
+     * =============================
+     * =          TIMEOUT          =
+     * =============================
+     * */
 
-    return 0;
+    /* Configuriamo il tempo massimo che una System call può attendere per individuare un descrittore pronto */
+    timeout.tv_sec = SECONDS_TO_WAIT;
+    timeout.tv_usec = MICROSECONDS_TO_WAIT;
+
+    /*
+     * ==================================
+     * =        COMMAND  REQUEST        =
+     * ==================================
+     * */
+
+    /* Copiamo la stringa "CMD_DTM" all'interno dell'array di caratteri "@command_writer_buffer" */
+    strcpy(command_writer_buffer, "CMD_DTM");
+
+    /* Effettuiamo una richiesta daytime al server con le informazioni contenute nel "@command_writer_buffer" */
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+
+    exit(EXIT_SUCCESS);
 }
 
 

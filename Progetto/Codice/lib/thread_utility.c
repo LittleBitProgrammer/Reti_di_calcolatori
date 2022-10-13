@@ -21,7 +21,7 @@ void* vaccination_center_handler(void* args)
      * =        ZEROING        =
      * =========================
      * */
-    //TODO: Controllare con breakpoint se i buffer vengono azzerati
+
     /*
      * Azzeriamo i byte che compongono l'array "@command_reader_buffer" e "@command_writer_buffer" per evitare di avere
      * valori raw all'interno di questi ultimi
