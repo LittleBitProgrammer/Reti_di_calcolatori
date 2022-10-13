@@ -116,6 +116,14 @@ int main(int argc, char **argv)
      * */
      server_address.sin_port = htons(6463);
 
+    /*
+     * ==================================
+     * =           CONNECTION           =
+     * ==================================
+     * */
+    ConnectIPV4(client_file_descriptor, &server_address);
+
+    
 
     return 0;
 }

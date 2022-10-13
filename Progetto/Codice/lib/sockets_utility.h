@@ -42,6 +42,14 @@ void BindIPV4(int, struct sockaddr_in*);
 void Listen(int, int);
 
 /**
+ * @brief Tale funzione permette di connettere due socket "@file_descriptor_to_connect" ed il socket associato alla struttura "@destination_endpoint"
+ *
+ * @param file_descriptor_to_connect File descrittore sorgente da connettere con il socket associato alla struttura "@destination_endpoint"
+ * @param destination_endpoint Endopoint della destinazione da connettere con il file descrittore sorgente "@file_descriptor_to_connect"
+ * */
+void ConnectIPV4(int, struct sockaddr_in*);
+
+/**
  * @brief La funzione esegue la Three way Handshake con il client che ne fa espressamente richiesta
  *
  * @param listen_file_descriptor File descriptor configurato in modalità ascolto sul quale arriverà la nuova richiesta di connessione

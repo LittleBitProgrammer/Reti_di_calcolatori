@@ -1,6 +1,11 @@
 #include <strings.h>            /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
+#include "sockets_utility.h"    /* Importata per utilizzare le funzioni:
+                                        1. "@FullRead()"
+                                        2. "@FullWrite()"
+                                   E le costanti:
+                                        1. CMD_BUFFER_LEN
+                                */
 #include "thread_utility.h"
-#include "sockets_utility.h"
 
 void* vaccination_center_handler(void* args)
 {

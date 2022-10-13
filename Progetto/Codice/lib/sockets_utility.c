@@ -102,6 +102,27 @@ void Listen(int file_descriptor, int backlog_size)
 }
 
 /**
+ * @brief Tale funzione permette di connettere due socket "@file_descriptor_to_connect" ed il socket associato alla struttura "@destination_endpoint"
+ *
+ * @param file_descriptor_to_connect File descrittore sorgente da connettere con il socket associato alla struttura "@destination_endpoint"
+ * @param destination_endpoint Endopoint della destinazione da connettere con il file descrittore sorgente "@file_descriptor_to_connect"
+ * */
+void ConnectIPV4(int file_descriptor_to_connect, struct sockaddr_in* destination_endpoint)
+{
+    /*
+     * Attraverso la seguente funzione effettuiamo una richiesta al server di una Three way Handshake, ovvero richiediamo una
+     * connessione con il server. Inoltre, quest'ultima ritorna 0 in caso di successo, oppure -1 in caso di errore,
+     * configurando errno (numero dell'ultimo errore) per indicare l'errore
+     * */
+    if(connect(file_descriptor_to_connect, (struct sockaddr*)destination_endpoint, sizeof(*destination_endpoint)) < 0)
+    {
+        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+        perror("Connect IPv4 error: ");
+        exit(EXIT_FAILURE);
+    }
+}
+
+/**
  * @brief La funzione esegue la Three way Handshake con il client che ne fa espressamente richiesta
  *
  * @param listen_file_descriptor File descriptor configurato in modalità ascolto sul quale arriverà la nuova richiesta di connessione
