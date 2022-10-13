@@ -1,7 +1,7 @@
 #include <stdio.h>                  /* Importata per utilizzare la funzione "@perror()" */
 #include <stdlib.h>                 /* Importata per utilizzare la funzione "@exit()" */
 #include <netdb.h>                  /* Importata per utilizzare la funzione "@gethostbyname()" */
-#include <string.h>
+#include <string.h>                 /* Importata per utilizzare la funzione "@bzero()" */
 #include "lib/sockets_utility.h"    /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 
 int main(int argc, char **argv)
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
      * */
      server_address.sin_port = htons(6463);
 
-     
+
     return 0;
 }
 
