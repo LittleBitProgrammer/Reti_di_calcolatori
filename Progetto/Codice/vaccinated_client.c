@@ -147,6 +147,7 @@ int main(int argc, char **argv)
      * ==================================
      * */
 
+    /* Eseguiamo una "@FullRead()" per ottenere una response Daytime dal server connesso */
     if(FullRead(client_file_descriptor, server_daytime, sizeof(*server_daytime)) < 0)
     {
         /* Caso in cui il server si sia disconnesso */
@@ -155,7 +156,11 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
     free(server_daytime);
+    /* Chiusura del socket file descriptor connesso al server */
+    close(client_file_descriptor);
+    /* Terminiamo con successo il processo client */
     exit(EXIT_SUCCESS);
 }
 
