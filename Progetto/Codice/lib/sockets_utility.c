@@ -26,7 +26,7 @@ int Socket(int address_family, int transport_type, int transport_subtype)
     if((file_descriptor = socket(address_family, transport_type, transport_subtype)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Creation socket error: ");
+        perror("Creation socket error");
         exit(EXIT_FAILURE);
     }
 
@@ -65,7 +65,7 @@ void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in* endpoint)
     if(bind(file_descriptor_to_bind, (struct sockaddr*)endpoint, sizeof(*endpoint)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Bind to endpoint error: ");
+        perror("Bind to endpoint error");
         exit(EXIT_FAILURE);
     }
 }
@@ -96,7 +96,7 @@ void Listen(int file_descriptor, int backlog_size)
     if(listen(file_descriptor, backlog_size) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Error while configuring the socket in listening: ");
+        perror("Error while configuring the socket in listening");
         exit(EXIT_FAILURE);
     }
 }
@@ -117,7 +117,7 @@ void ConnectIPV4(int file_descriptor_to_connect, struct sockaddr_in* destination
     if(connect(file_descriptor_to_connect, (struct sockaddr*)destination_endpoint, sizeof(*destination_endpoint)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Connect IPv4 error: ");
+        perror("Connect IPv4 error");
         exit(EXIT_FAILURE);
     }
 }
@@ -146,7 +146,7 @@ int AcceptIPV4(int listen_file_descriptor, struct sockaddr_in* client_address, s
     if((connection_file_descriptor = accept(listen_file_descriptor, (struct sockaddr *)client_address, client_size)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Error while trying to accept a new connection: ");
+        perror("Error while trying to accept a new connection");
         exit(EXIT_FAILURE);
     }
 
@@ -192,7 +192,7 @@ size_t FullRead(int file_descriptor, void* buffer, size_t n_bytes)
             else
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
-                perror("Reading error: ");
+                perror("Reading error");
                 exit((int)n_read);
             }
         }
@@ -251,7 +251,7 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
             else
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
-                perror("Writing error: ");
+                perror("Writing error");
                 exit((int)n_written);
             }
         }

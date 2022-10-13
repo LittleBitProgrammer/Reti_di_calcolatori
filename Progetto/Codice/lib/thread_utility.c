@@ -1,5 +1,4 @@
 #include <stdio.h>              /* Importata per utilizzare la funzione "@snprintf()" */
-#include <stdlib.h>             /* Importata per utilizzare la funzione "@malloc()" e "@free()" */
 #include <string.h>             /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
 #include <time.h>               /* Importata per utilizzare la funzione "@time()" */
 #include <unistd.h>             /* Importata per utilizzare la funzione "@close() */
@@ -68,7 +67,10 @@ void* vaccination_center_handler(void* args)
         /* Tale funzione ritorna un valore intero rappresentante il numero di secondi da 00:00, 1 gennaio 1970 */
         server_daytime = time(NULL);
         /* Tale funzione ci permette di convertire un tipo "@time_t" in una struttura utile a memorizzare data e tempo locale suddivisi in campi */
-        local_daytime = localtime(&server_daytime);
+        if((local_daytime = localtime(&server_daytime)) == NULL)
+        {
+            fprintf(stderr, "local day time error\n");
+        }
 
         /* Ci avvaliamo della funzione "@FullWrite" per scrivere sul socket i bytes che compongono la struttura di tipo "@tm" */
         FullWrite(connection_file_descriptor, local_daytime, sizeof(*local_daytime));

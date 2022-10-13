@@ -12,19 +12,12 @@ int main(int argc, char **argv)
      * =       Variables        =
      * ==========================
      */
-    int                client_file_descriptor;                  /* File descriptor associato al socket del client */
-    struct sockaddr_in server_address;                          /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del server */
-    struct hostent*    server_dns;                              /* Struttura contenente varie informazioni sull'host server, utile ad effettuare un'operazione
-                                                                   DNS (Risoluzione diretta) */
-    char               command_writer_buffer[CMD_BUFFER_LEN];   /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
-    fd_set             monitor_reader_socket;                   /* Array, corrispondente all'insieme dei descrittori pronti per la lettura, dichiarato per
-                                                                   implementare un I/O Multiplex sul client */
-    int                max_sockets_to_monitor;                  /* Indice utile a limitare il numero di descrittori da controllare */
-    size_t             ready_sockets;                           /* Numero di sockets pronti eseguire azioni di I/O */
-    struct timeval     timeout;                                 /* Struttura utile a rappresentare il tempo massimo che una System call può attendere per individuare
-                                                                   un descrittore pronto */
-    struct tm*         server_daytime;                          /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
-    char stringa[100];
+    int                client_file_descriptor;                                       /* File descriptor associato al socket del client */
+    struct sockaddr_in server_address;                                               /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del server */
+    struct hostent*    server_dns;                                                   /* Struttura contenente varie informazioni sull'host server, utile ad effettuare un'operazione
+                                                                                        DNS (Risoluzione diretta) */
+    char               command_writer_buffer[CMD_BUFFER_LEN];                        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
+    struct tm*         server_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
 
     /*
      * ==========================
@@ -129,85 +122,41 @@ int main(int argc, char **argv)
     /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
     ConnectIPV4(client_file_descriptor, &server_address);
 
-    /*
-     * ============================
-     * =          SELECT          =
-     * ============================
-     * */
-
-    /* Configuriamo il tempo massimo che una System call può attendere per individuare un descrittore pronto */
-    timeout.tv_sec = SECONDS_TO_WAIT;
-    timeout.tv_usec = MICROSECONDS_TO_WAIT;
-
-    /*  */
-    FD_ZERO(&monitor_reader_socket);
-    /*  */
-    FD_SET(STDIN_FILENO, &monitor_reader_socket);
-    FD_SET(client_file_descriptor, &monitor_reader_socket);
-
-    /*  */
-    max_sockets_to_monitor = (client_file_descriptor > STDIN_FILENO) ? client_file_descriptor + 1 : STDIN_FILENO + 1;
 
     /*
-     *
+     * ==================================
+     * =        DAYTIME  REQUEST        =
+     * ==================================
      * */
-    if((ready_sockets = select(max_sockets_to_monitor, &monitor_reader_socket, NULL, NULL, &timeout)) < 0)
+
+    /*
+     * Di seguito, andremo ad eseguire una richiesta Daytime al server centro vaccinale, in modo tale da reperire la data
+     * corrente del server, la quale ci servirà per verificare che la data inserita dall'utente non sia superiore alla data
+     * odierna
+     * */
+
+    /* Copiamo la stringa "CMD_DTM" all'interno dell'array di caratteri "@command_writer_buffer" */
+    strcpy(command_writer_buffer, "CMD_DTM");
+
+    /* Effettuiamo una richiesta daytime al server con le informazioni contenute nel "@command_writer_buffer" */
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+
+    /*
+     * ==================================
+     * =       DAYTIME   RESPONSE       =
+     * ==================================
+     * */
+
+    if(FullRead(client_file_descriptor, server_daytime, sizeof(*server_daytime)) < 0)
     {
-        fprintf(stderr, "Select error\n");
+        /* Caso in cui il server si sia disconnesso */
+        fprintf(stderr, "Server disconnesso\n");
         close(client_file_descriptor);
         exit(EXIT_FAILURE);
     }
-    else if(ready_sockets == 0)
-    {
-        fprintf(stderr, "Session expired\n");
-        close(client_file_descriptor);
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        /*
-         * ==================================
-         * =        DAYTIME  REQUEST        =
-         * ==================================
-         * */
 
-        /*
-         * Di seguito, andremo ad eseguire una richiesta Daytime al server centro vaccinale, in modo tale da reperire la data
-         * corrente del server, la quale ci servirà per verificare che la data inserita dall'utente non sia superiore alla data
-         * odierna
-         * */
-
-        /* Copiamo la stringa "CMD_DTM" all'interno dell'array di caratteri "@command_writer_buffer" */
-        strcpy(command_writer_buffer, "CMD_DTM");
-
-        /* Effettuiamo una richiesta daytime al server con le informazioni contenute nel "@command_writer_buffer" */
-        FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
-
-        /*
-         * ==================================
-         * =       DAYTIME   RESPONSE       =
-         * ==================================
-         * */
-        if(FD_ISSET(STDIN_FILENO, &monitor_reader_socket))
-        {
-            scanf("%s", stringa);
-            fprintf(stderr, "%s\n", stringa);
-        }
-
-        if(FD_ISSET(client_file_descriptor, &monitor_reader_socket))
-        {
-            if(FullRead(client_file_descriptor, server_daytime, sizeof(*server_daytime)) < 0)
-            {
-                /* Caso in cui il server si sia disconnesso */
-                fprintf(stderr, "Server disconnesso\n");
-                close(client_file_descriptor);
-                exit(EXIT_FAILURE);
-            }
-
-        }
-
-        exit(EXIT_SUCCESS);
-    }
+    free(server_daytime);
+    exit(EXIT_SUCCESS);
 }
 
 

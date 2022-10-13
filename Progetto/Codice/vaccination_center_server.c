@@ -167,7 +167,8 @@ int main(int argc, char **argv)
          * */
         if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &connection_file_descriptor)) != 0)
         {
-            perror("Thread creation error: ");
+            /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+            perror("Thread creation error");
             break;
         }
 
@@ -193,7 +194,8 @@ int main(int argc, char **argv)
                  * */
                 if((errno = pthread_join(threads_id[i++], NULL)) != 0)
                 {
-                    perror("Failed to join thread: ");
+                    /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+                    perror("Failed to join thread");
                     break;
                 }
             }
