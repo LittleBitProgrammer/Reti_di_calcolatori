@@ -156,6 +156,24 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    /*
+     * ==================================
+     * =     SUBSCRIPTION  REQUEST      =
+     * ==================================
+     * */ //TODO: bisogna fare i menu
+
+    /*
+     *
+     * */
+
+    /* Copiamo la stringa "CMD_SUB" all'interno dell'array di caratteri "@command_writer_buffer" */
+    strcpy(command_writer_buffer, "CMD_SUB");
+
+    /* Effettuiamo una richiesta daytime al server con le informazioni contenute nel "@command_writer_buffer" */
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+
+
+
     /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
     free(server_daytime);
     /* Chiusura del socket file descriptor connesso al server */
