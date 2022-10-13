@@ -44,7 +44,7 @@ void* vaccination_center_handler(void* args)
     /* Eseguiamo un'operazione di lettura sul socket per leggere il comando inviato dal client */
     if(FullRead(connection_file_descriptor, &command_reader_buffer, CMD_BUFFER_LEN) > 0)
     {
-        /* Caso in client si sia disconnesso */
+        /* Caso in cui il client si sia disconnesso */
         fprintf(stderr, "Client disconnesso\n");
         close(connection_file_descriptor);
         pthread_exit(NULL);
