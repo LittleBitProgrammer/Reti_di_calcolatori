@@ -34,6 +34,21 @@ int Socket(int address_family, int transport_type, int transport_subtype)
 }
 
 /**
+ * @brief Funzione che permette la creazione di un file descriptor associato ad una socket con una famiglia di indirizzi
+ *        IPv4 ed un protocollo trasporto TCP
+ *
+ * @return File descriptor associato al socket creato
+ * */
+int SocketIPV4(void)
+{
+    /*
+     * Sfruttiamo la funzione "@Socket()" della libreria "@socket_utility.h" per ritornare un file descriptor associato
+     * ad una socket
+     * */
+    return Socket(AF_INET, SOCK_STREAM, 0);
+}
+
+/**
  * @brief Questa funzione serve ad asscoiare un Endpoint ad un file descriptor specifico "@file_descriptor_to_bind" e "@endpoint"
  *
  * @param file_descriptor_to_bind File descrpitor del socket da associare ad una struttura di tipo "@sockaddr_in"

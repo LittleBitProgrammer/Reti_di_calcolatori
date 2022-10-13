@@ -18,6 +18,14 @@
 int Socket(int, int, int);
 
 /**
+ * @brief Funzione che permette la creazione di un file descriptor associato ad una socket con una famiglia di indirizzi
+ *        IPv4 ed un protocollo trasporto TCP
+ *
+ * @return File descriptor associato al socket creato
+ * */
+int SocketIPV4(void);
+
+/**
  * @brief Questa funzione serve ad asscoiare un Endpoint ad un file descriptor specifico "@file_descriptor_to_bind" e "@endpoint"
  *
  * @param file_descriptor_to_bind File descrpitor del socket da associare ad una struttura di tipo "@sockaddr_in"

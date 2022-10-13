@@ -1,6 +1,7 @@
 #include <stdio.h>                  /* Importata per utilizzare la funzione "@perror()" */
 #include <stdlib.h>                 /* Importata per utilizzare la funzione "@exit()" */
 #include <netdb.h>                  /* Importata per utilizzare la funzione "@gethostbyname()" */
+#include <string.h>
 #include "lib/sockets_utility.h"    /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 
 int main(int argc, char **argv)
@@ -37,6 +38,14 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    /* ==========================
+     * =    ZEROING  ARRAYS     =
+     * ==========================
+     * */
+
+    /* Azzeriamo i byte che compongono l'array "@command_writer_buffer" per evitare di avere valori raw all'interno di quest'ultimo */
+    bzero(command_writer_buffer, CMD_BUFFER_LEN);
+
     /*
      * ==========================
      * =          DNS           =
@@ -55,8 +64,59 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    
+    /*
+     * ==================================
+     * =        SOCKET CREATION         =
+     * ==================================
+     * */
 
+    /*
+    * Inizializziamo il valore del file descriptor sfruttando la funzione definita nella libreria "@sockets_utilities.h".
+     * In questo modo, associamo il file descriptor ad una socket
+    * */
+    client_file_descriptor = SocketIPV4();
+
+    /*
+     * ==================================
+     * =        SERVER CREATION         =
+     * ==================================
+     * */
+
+    /*
+     * Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale da costruire un Endpoint identificabile sulla rete.
+     * La struttura "@sockaddr_in" è composta dai seguenti campi:
+     *      @sin_family:      Famiglia degli indirizzi utilizzati (AF_INET - AF_INET6 - ecc...)
+     *      @sin_port:        Porta in Network order
+     *      @sin_addr.s_addr: Indirizzo IP in Network order
+     * */
+
+    /*
+     * Inizializziamo il campo famiglia della struttura "@sockaddr_in" del server con il valore "@server_dns->h_addrtype",
+     * reperito attraverso un azione di risoluzione diretta del DNS. In questo modo, specifichiamo che il nostro server
+     * utilizzerà un indirizzo del tipo IPv4
+     * */
+     server_address.sin_family = server_dns->h_addrtype;
+
+     /*
+      * Inizializziamo il campo della struttura "@sockaddr_in" del server attraverso il valore "@server_dns->h_addr_list[0]"
+      * Sfruttiamo un cast a puntatore della struttura "@in_addr" in modo da leggere i singoli byte che compongono "@h_addr_list[0]"
+      * come un intero definito nella struttura "@sin_addr.s_addr". In questo modo si memorizza l'indirizzo IP ottenuto
+      * attraverso un'operazione diretta DNS in formato Network order
+      * */
+     server_address.sin_addr = *((struct in_addr *)server_dns->h_addr_list[0]);
+
+    /*
+     * Inizializziamo il campo porta della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
+     * "@htons()" la quale accetterà come argomento un intero rappresentante la porta desiderata.
+     * Le porte sono interi a 16 bit da 0 a 65535, raggruppate nel seguente modo:
+     *      - da 0 a 1023, porte riservate ai processi root;
+     *      - da 1024 a 49151, porte registrate;
+     *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
+     * Per il progetto si è deciso di utilizzare una porta registrata "6463"
+     * */
+     server_address.sin_port = htons(6463);
+
+     
     return 0;
 }
 
