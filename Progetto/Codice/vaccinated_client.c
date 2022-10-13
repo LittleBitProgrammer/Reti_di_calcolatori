@@ -3,8 +3,9 @@
 #include <netdb.h>                  /* Importata per utilizzare la funzione "@gethostbyname()" */
 #include <string.h>                 /* Importata per utilizzare la funzione "@bzero()" */
 #include <unistd.h>                 /* Importata per utilizzare la costante "@STDIN_FILENO" */
-#include <time.h>                   /* Importata per utilizzare la struttura "@struct tm" */
 #include "lib/sockets_utility.h"    /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
+#include "lib/menu_utility.h"       /* Importata per utilizzare la funzione "@print_vaccinated_menu()" */
+#include "lib/data_utility.h"
 
 int main(int argc, char **argv)
 {
@@ -18,6 +19,7 @@ int main(int argc, char **argv)
                                                                                         DNS (Risoluzione diretta) */
     char               command_writer_buffer[CMD_BUFFER_LEN];                        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
     struct tm*         server_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
+    struct tm*         client_daytime = (struct tm*)malloc(sizeof(struct tm));
 
     /*
      * ==========================
@@ -160,11 +162,25 @@ int main(int argc, char **argv)
      * ==================================
      * =     SUBSCRIPTION  REQUEST      =
      * ==================================
-     * */ //TODO: bisogna fare i menu
+     * */
 
     /*
      *
      * */
+    print_vaccinated_menu();
+
+    /*
+    if(scanf("%d/%d/%d", &(client_daytime->tm_mday), &(client_daytime->tm_mon), &(client_daytime->tm_year)) < 3)
+    {
+        fprintf(stderr, "Formato data di vaccinazione non valido");
+        free(server_daytime);
+        free(client_daytime);
+        close(client_file_descriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    if()
+    */
 
     /* Copiamo la stringa "CMD_SUB" all'interno dell'array di caratteri "@command_writer_buffer" */
     strcpy(command_writer_buffer, "CMD_SUB");
@@ -173,9 +189,9 @@ int main(int argc, char **argv)
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
 
 
-
     /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
     free(server_daytime);
+    free(client_daytime);
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);
     /* Terminiamo con successo il processo client */

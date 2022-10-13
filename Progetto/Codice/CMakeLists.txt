@@ -10,7 +10,7 @@ include_directories(.)
 # ==========================
 # Aggiungiamo all'elenco dei file eseguibili singolarmente il:
 # - client vaccinato
-add_executable(client_vaccinato vaccinated_client.c lib/sockets_utility.c lib/sockets_utility.h)
+add_executable(client_vaccinato vaccinated_client.c lib/sockets_utility.c lib/sockets_utility.h lib/menu_utility.c lib/menu_utility.h lib/data_utility.c lib/data_utility.h lib/bool_utility.h)
 
 # - client amministratore
 add_executable(client_amministratore administrator_client.c)
