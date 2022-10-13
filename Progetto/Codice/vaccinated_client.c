@@ -169,6 +169,8 @@ int main(int argc, char **argv)
      * */
     print_vaccinated_menu();
 
+    // TODO: portare questo nel blocco zeroing
+    bzero(client_daytime, sizeof(*client_daytime));
     /*
     if(scanf("%d/%d/%d", &(client_daytime->tm_mday), &(client_daytime->tm_mon), &(client_daytime->tm_year)) < 3)
     {
