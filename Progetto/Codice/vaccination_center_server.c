@@ -165,13 +165,41 @@ int main(int argc, char **argv)
          * il server nel caso in cui il client invii una sequenza di byte malevoli, in quanto l'unico processo che verrà bloccato
          * sarà quello del thread, permettendo agli altri client di essere serviti
          * */
-        if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, NULL)) != 0)
+        if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &connection_file_descriptor)) != 0)
         {
             perror("Thread creation error: ");
             break;
         }
 
+        /*
+         * =================================
+         * =       THREAD  CREATION        =
+         * =================================
+         * */
 
+        /*
+         * Tale blocco di codice servirà a permettere al thread master di aspettare che gli altri thread generati, attraverso una "@pthread_create()",
+         * che abbiano finito di eseguire le loro istruzioni
+         * */
+        if(i >= DEFAULT_BACKLOG_SIZE)
+        {
+            i = 0;
+
+            while(i < DEFAULT_BACKLOG_SIZE)
+            {
+                /*
+                 * La funzione "@pthread_join()" ritornerà 0 in caso di successo e un valore diverso da 0 corrispondente al numero dell'errore, per tal
+                 * motivo si è deciso di assegnare ad "@errno" il valore di ritorno della funzione
+                 * */
+                if((errno = pthread_join(threads_id[i++], NULL)) != 0)
+                {
+                    perror("Failed to join thread: ");
+                    break;
+                }
+            }
+
+            i = 0;
+        }
     }
 
     exit(EXIT_FAILURE);

@@ -2,6 +2,7 @@
 #define SOCKETS_UTILITY_H
 
 #include <arpa/inet.h>              /* Importata per utilizzare le strutture di tipo "@sockaddr_in" */
+#define CMD_BUFFER_LEN 8            /* Costante volta a definire la dimensione massima dei comandi inviati */
 #define DEFAULT_BACKLOG_SIZE 50     /* Costante volta a definire la dimensione di default massima delle backlog dei
                                      * servers definiti nel sistema GreenPass */
 
