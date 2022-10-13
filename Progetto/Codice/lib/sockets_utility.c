@@ -1,9 +1,7 @@
-//
-// Created by gaetano on 12/10/22.
-//
-
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>              /* Importata per utilizzare la funzione "@perror()" */
+#include <stdlib.h>             /* Importata per utilizzare la funzione "@exit()" */
+#include <unistd.h>             /* Importata per utilizzare le funzioni "@read()" e "@write()" */
+#include <errno.h>              /* Importata per utilizzare la variabile globale "@errno" e la costante "@EINTR" */
 #include "sockets_utility.h"
 
 /**
@@ -66,6 +64,15 @@ void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in* endpoint)
 void Listen(int file_descriptor, int backlog_size)
 {
     /*
+     * Se la dimensione della coda delle connessioni in pendenza è negativa, allora procediamo riassegnando la "@backlog_size"
+     * con la dimensione di default prevista dalla libreria
+     * */
+    if(backlog_size < 0)
+    {
+        backlog_size = DEFAULT_BACKLOG_SIZE;
+    }
+
+    /*
      * Attraverso la funzione "@listen()" configuriamo il socket, identificato dal "@file_descriptor" passato in input, in modalità
      * ascolto. In questo modo il socket sarà pronto per accettare nuove connessioni. In particolare sfruttiamo
      * il valore di ritorno della "@listen()" per la gestione degli errori, in quanto, quest'ultima ritornerà 0 in caso di successo
@@ -108,4 +115,117 @@ int AcceptIPV4(int listen_file_descriptor, struct sockaddr_in* client_address, s
     }
 
     return connection_file_descriptor;
+}
+
+/**
+ * @brief La funzione permette la lettura dei byte presenti in un "@buffer" anche in caso di interruzioni da parte di una
+ *        System call. In questo modo, gestiamo le interruzioni permettendo alla "@read()" di leggere tutti i byte presenti
+ *        nel "@buffer"
+ *
+ * @param file_descriptor File descriptor del socket su cui eseguire l'operazione di lettura attraverso una "@read()"
+ * @param buffer Buffer contenente i byte da leggere
+ * @param n_bytes Numero di bytes presenti nel "@buffer"
+ *
+ * @return Numero di byte rimanenti da leggere
+ * */
+size_t FullRead(int file_descriptor, void* buffer, size_t n_bytes)
+{
+    /* Bytes rimanenti da leggere */
+    size_t n_left = n_bytes;
+    /* Bytes letti */
+    ssize_t n_read;
+
+    /* Costrutto iterativo, che si ripeterà fino a quando ci saranno bytes da leggere */
+    while(n_left > 0)
+    {
+        /*
+         * La "@read()" in caso di successo ritorna il numero di byte letti, 0 in caso di "@EOF", e un valore minore di 0
+         * in caso di errore, configurando errno (numero dell'ultimo errore) per indicare l'errore. Sfruttiamo tale valore
+         * di ritorno per gestire gli errori e casi speciali
+         * */
+        if((n_read = read(file_descriptor, buffer, n_bytes)) < 0)
+        {
+            /*
+             * Verifichiamo che l'errore configurato dalla "@read()" sia uguale ad "@EINTR". Attraverso la verifica di tale condizione
+             * rileviamo l'interruzione di una System call
+             * */
+            if(errno == EINTR)
+            {
+                continue;
+            }
+            else
+            {
+                /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
+                perror("Reading error: ");
+                exit((int)n_read);
+            }
+        }
+        else if(n_read == 0) /* Caso in cui viene raggiunto "@EOF" */
+        {
+            /* Se abbiamo raggiunto la fine del file in lettura, interrompiamo il ciclo */
+            break;
+        }
+
+        /* Aggiorniamo i bytes rimanenti da leggere */
+        n_left -= n_read;
+
+        /* Aggiorniamo l'offset del buffer */
+        buffer += n_read;
+    }
+
+    return n_left;
+}
+
+/**
+ * @brief La funzione permette la scrittura dei byte presenti in un "@buffer" anche in caso di interruzioni da parte di una
+ *        System call. In questo modo, gestiamo le interruzioni permettendo alla "@write()" di scrivere tutti i byte presenti
+ *        nel "@buffer"
+ *
+ * @param file_descriptor File descriptor del socket su cui eseguire l'operazione di scrittura attraverso una "@write()"
+ * @param buffer Buffer contenente i byte da scrivere
+ * @param n_bytes Numero di bytes presenti nel "@buffer"
+ *
+ * @return Numero di byte rimanenti da scrivere
+ * */
+size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
+{
+    /* Bytes rimanenti da scrivere */
+    size_t n_left = n_bytes;
+    /* Bytes scritti */
+    ssize_t n_written;
+
+    /* Costrutto iterativo, che si ripeterà fino a quando ci saranno bytes da scrivere */
+    while(n_left > 0)
+    {
+        /*
+         * La "@write()" in caso di successo ritorna il numero di byte scritti. In caso di errore, ritorna un valore minore di 0,
+         * configurando errno (numero dell'ultimo errore) per indicare l'errore. Sfruttiamo tale valore
+         * di ritorno per gestire gli errori e casi speciali
+         * */
+        if((n_written = write(file_descriptor, buffer, n_bytes)) < 0)
+        {
+            /*
+             * Verifichiamo che l'errore configurato dalla "@write()" sia uguale ad "@EINTR". Attraverso la verifica di tale condizione
+             * rileviamo l'interruzione di una System call
+             * */
+            if(errno == EINTR)
+            {
+                continue;
+            }
+            else
+            {
+                /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
+                perror("Writing error: ");
+                exit((int)n_written);
+            }
+        }
+
+        /* Aggiorniamo i bytes rimanenti da scrivere */
+        n_left -= n_written;
+
+        /* Aggiorniamo l'offset del buffer */
+        buffer += n_written;
+    }
+
+    return n_left;
 }

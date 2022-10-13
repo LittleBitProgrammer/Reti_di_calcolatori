@@ -1,5 +1,6 @@
-//
-// Created by gaetano on 12/10/22.
-//
-
 #include "thread_utility.h"
+
+void* vaccination_center_handler(void* args)
+{
+    //TODO: vaccination_center_handler
+}

@@ -1,7 +1,3 @@
-//
-// Created by gaetano on 12/10/22.
-//
-
 #ifndef SOCKETS_UTILITY_H
 #define SOCKETS_UTILITY_H
 
@@ -46,5 +42,31 @@ void Listen(int, int);
  * @return File descriptor avente le stesse proprietà del "@listen_file_descriptor" utile a gestire la nuova connessione e a servire il client
  * */
 int AcceptIPV4(int, struct sockaddr_in*, socklen_t*);
+
+/**
+ * @brief La funzione permette la lettura dei byte presenti in un "@buffer" anche in caso di interruzioni da parte di una
+ *        System call. In questo modo, gestiamo le interruzioni permettendo alla "@read()" di leggere tutti i byte presenti
+ *        nel "@buffer"
+ *
+ * @param file_descriptor File descriptor del socket su cui eseguire l'operazione di lettura attraverso una "@read()"
+ * @param buffer Buffer contenente i byte da leggere
+ * @param n_bytes Numero di bytes presenti nel "@buffer"
+ *
+ * @return Numero di byte rimanenti da leggere
+ * */
+size_t FullRead(int, void*, size_t);
+
+/**
+ * @brief La funzione permette la scrittura dei byte presenti in un "@buffer" anche in caso di interruzioni da parte di una
+ *        System call. In questo modo, gestiamo le interruzioni permettendo alla "@write()" di scrivere tutti i byte presenti
+ *        nel "@buffer"
+ *
+ * @param file_descriptor File descriptor del socket su cui eseguire l'operazione di scrittura attraverso una "@write()"
+ * @param buffer Buffer contenente i byte da scrivere
+ * @param n_bytes Numero di bytes presenti nel "@buffer"
+ *
+ * @return Numero di byte rimanenti da scrivere
+ * */
+size_t FullWrite(int, void*, size_t);
 
 #endif // SOCKETS_UTILITY_H
