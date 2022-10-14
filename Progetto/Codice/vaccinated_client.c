@@ -229,9 +229,13 @@ int main(int argc, char **argv)
     {
         printf("Caricato con successo\n");
     }
+    else if(is_green_pass_obtained.write_file_flag || is_green_pass_obtained.read_file_flag || is_green_pass_obtained.open_file_flag)
+    {
+        fprintf(stderr,"Anomalia durante l'operazione del server\n");
+    }
     else
     {
-        printf("Errore nel caricamento\n");
+        fprintf(stderr,"Errore nel caricamento\n");
     }
 
     /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
