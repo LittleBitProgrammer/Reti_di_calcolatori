@@ -107,12 +107,106 @@ void* vaccination_center_handler(void* args)
              * =================================
              * */
 
+            int subscription_socket;
+            struct sockaddr_in central_server_address;
+            const char central_server_ip[] = "127.0.0.1";
+
             /*
              *
              * */
-            FullRead(connection_file_descriptor, &vaccinated_response_package, sizeof(vaccinated_response_package));
+            if(FullRead(connection_file_descriptor, &vaccinated_response_package, sizeof(vaccinated_response_package)) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
 
-            //TODO: creare la connessione con il server centrale e poi mandare il comando e poi mandare il pacchetto al suddetto e poi chiudere la connessione e poi mandare la response al client
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Client disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            /* ==========================
+             * =    SOCKET CREATION     =
+             * ==========================
+             * */
+
+            subscription_socket = SocketIPV4();
+
+            /*
+             * ==================================
+             * =        SERVER CREATION         =
+             * ==================================
+             * */
+
+            /*
+             * Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale da costruire un Endpoint identificabile sulla rete.
+             * La struttura "@sockaddr_in" è composta dai seguenti campi:
+             *      @sin_family:      Famiglia degli indirizzi utilizzati (AF_INET - AF_INET6 - ecc...)
+             *      @sin_port:        Porta in Network order
+             *      @sin_addr.s_addr: Indirizzo IP in Network order
+             * */
+
+            /*
+             * Inizializziamo il campo famiglia della struttura "@sockaddr_in" del server con il valore "@AF_INET". In questo modo, specifichiamo
+             * che il nostro server utilizzerà un indirizzo del tipo IPv4
+             * */
+            central_server_address.sin_family = AF_INET;
+
+            /*
+             *
+             * */
+            if(inet_pton(AF_INET, central_server_ip, &central_server_address.sin_addr) <= 0)
+            {
+                /*  */
+                fprintf(stderr, "inet_pton() error for %s\n", central_server_ip);
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                close(subscription_socket);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            /*
+             * Inizializziamo il campo porta della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
+             * "@htons()" la quale accetterà come argomento un intero rappresentante la porta desiderata su cui il server deve rimanere
+             * in ascolto. Le porte sono interi a 16 bit da 0 a 65535, raggruppate nel seguente modo:
+             *      - da 0 a 1023, porte riservate ai processi root;
+             *      - da 1024 a 49151, porte registrate;
+             *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
+             * Per il progetto si è deciso di utilizzare una porta registrata "6464"
+             * */
+            central_server_address.sin_port = htons(6464);
+
+            /*
+             * ==================================
+             * =           CONNECTION           =
+             * ==================================
+             * */
+
+            /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
+            ConnectIPV4(subscription_socket, &central_server_address);
+
+            strcpy(command_writer_buffer, "CMD_CTR");
+
+            FullWrite(subscription_socket, command_writer_buffer, CMD_BUFFER_LEN);
+            FullWrite(subscription_socket, vaccinated_response_package.card_code, sizeof(vaccinated_response_package.card_code));
+
+            //TODO: poi mandare il pacchetto al suddetto
+
+            close(subscription_socket);
+
+            //TODO: poi mandare la response al client
         }
 
         //TODO: caso default
@@ -121,7 +215,74 @@ void* vaccination_center_handler(void* args)
 
 void* central_server_handler(void* args)
 {
-    int                 connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    int  connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    char command_reader_buffer[CMD_BUFFER_LEN];
+    char reader_buffer[21];
 
-    
+    while(1)
+    {
+        /* =========================
+         * =        ZEROING        =
+         * =========================
+         * */
+
+        /*
+         * Azzeriamo i byte che compongono l'array "@command_reader_buffer" e "@command_writer_buffer" per evitare di avere
+         * valori raw all'interno di questi ultimi
+         * */
+        bzero(command_reader_buffer, CMD_BUFFER_LEN);
+        bzero(reader_buffer, 21);
+
+        /*
+         *
+         * */
+        if(FullRead(connection_file_descriptor, &command_reader_buffer, CMD_BUFFER_LEN) > 0)
+        {
+            /*
+             * ==================================
+             * =         CLOSE  THREAD          =
+             * ==================================
+             * */
+
+            /* Caso in cui il client si sia disconnesso */
+            fprintf(stderr, "Server centro vaccinale disconnesso\n");
+            /* Chiusura del socket file descriptor connesso al client */
+            close(connection_file_descriptor);
+            /*
+             * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+             * reperire l'informazione relativa al prossimo thread disponibile
+             * */
+            pthread_exit(NULL);
+        }
+
+        /*
+         * ================================
+         * =       COMMAND  COMPARE       =
+         * ================================
+         * */
+        if(!strcmp(command_reader_buffer, "CMD_CTR"))
+        {
+            if(FullRead(connection_file_descriptor, &reader_buffer, 21) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Server centro vaccinale disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            printf("CIUA\n");
+            //TODO: controllare se il codice è già presente nel file
+        }
+    }
 }
