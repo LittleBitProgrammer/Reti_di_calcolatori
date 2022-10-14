@@ -31,7 +31,7 @@ int main(int argc, char **argv)
      * Inizializziamo il valore del file descriptor, che verrà configurato in modalità ascolto, sfruttando la funzione definita
      * nella libreria "@sockets_utilities.h". In questo modo, associamo il file descriptor a una socket
      * */
-    listen_file_descriptor = Socket(AF_INET, SOCK_STREAM, 0);
+    listen_file_descriptor = SocketIPV4();
 
     /* ==========================
      * =    ZEROING  ARRAYS     =
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
      * */
 
     /*
-     * Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale costruire un Endpoint identificabile sulla rete.
+     * Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale da costruire un Endpoint identificabile sulla rete.
      * La struttura "@sockaddr_in" è composta dai seguenti campi:
      *      @sin_family:      Famiglia degli indirizzi utilizzati (AF_INET - AF_INET6 - ecc...)
      *      @sin_port:        Porta in Network order
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
     /*
      * Inizializziamo il campo famiglia della struttura "@sockaddr_in" del server con il valore "@AF_INET". In questo modo, specifichiamo
-     * che il nostro server utilizzerà un indirizzo del tipo "IPv4"
+     * che il nostro server utilizzerà un indirizzo del tipo IPv4
      * */
     server_address.sin_family = AF_INET;
 
@@ -167,7 +167,8 @@ int main(int argc, char **argv)
          * */
         if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &connection_file_descriptor)) != 0)
         {
-            perror("Thread creation error: ");
+            /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+            perror("Thread creation error");
             break;
         }
 
@@ -193,7 +194,8 @@ int main(int argc, char **argv)
                  * */
                 if((errno = pthread_join(threads_id[i++], NULL)) != 0)
                 {
-                    perror("Failed to join thread: ");
+                    /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+                    perror("Failed to join thread");
                     break;
                 }
             }

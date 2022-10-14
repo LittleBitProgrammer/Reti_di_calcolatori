@@ -1,10 +1,11 @@
 #ifndef SOCKETS_UTILITY_H
 #define SOCKETS_UTILITY_H
 
-#include <arpa/inet.h>              /* Importata per utilizzare le strutture di tipo "@sockaddr_in" */
-#define CMD_BUFFER_LEN 8            /* Costante volta a definire la dimensione massima dei comandi inviati */
-#define DEFAULT_BACKLOG_SIZE 50     /* Costante volta a definire la dimensione di default massima delle backlog dei
-                                     * servers definiti nel sistema GreenPass */
+#include <arpa/inet.h>            /* Importata per utilizzare le strutture di tipo "@sockaddr_in" */
+#define CMD_BUFFER_LEN        8   /* Costante volta a definire la dimensione massima dei comandi inviati */
+#define DEFAULT_BACKLOG_SIZE 50   /* Costante volta a definire la dimensione di default massima delle backlog dei servers definiti nel sistema GreenPass */
+#define SECONDS_TO_WAIT      30   /* Secondi che una System call può attendere per individuare un descrittore pronto */
+#define MICROSECONDS_TO_WAIT  0   /* Microsecondi che una System call può attendere per individuare un descrittore pronto */
 
 /**
  * @brief Funzione che permette la creazione di un file descriptor associato ad una socket
@@ -16,6 +17,14 @@
  * @return File descriptor associato alla socket creata
  * */
 int Socket(int, int, int);
+
+/**
+ * @brief Funzione che permette la creazione di un file descriptor associato ad una socket con una famiglia di indirizzi
+ *        IPv4 ed un protocollo trasporto TCP
+ *
+ * @return File descriptor associato al socket creato
+ * */
+int SocketIPV4(void);
 
 /**
  * @brief Questa funzione serve ad asscoiare un Endpoint ad un file descriptor specifico "@file_descriptor_to_bind" e "@endpoint"
@@ -32,6 +41,14 @@ void BindIPV4(int, struct sockaddr_in*);
  * @param backlog_size Coda delle connessioni in pendenza
  * */
 void Listen(int, int);
+
+/**
+ * @brief Tale funzione permette di connettere due socket "@file_descriptor_to_connect" ed il socket associato alla struttura "@destination_endpoint"
+ *
+ * @param file_descriptor_to_connect File descrittore sorgente da connettere con il socket associato alla struttura "@destination_endpoint"
+ * @param destination_endpoint Endopoint della destinazione da connettere con il file descrittore sorgente "@file_descriptor_to_connect"
+ * */
+void ConnectIPV4(int, struct sockaddr_in*);
 
 /**
  * @brief La funzione esegue la Three way Handshake con il client che ne fa espressamente richiesta

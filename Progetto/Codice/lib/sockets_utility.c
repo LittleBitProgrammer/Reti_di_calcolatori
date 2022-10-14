@@ -26,11 +26,26 @@ int Socket(int address_family, int transport_type, int transport_subtype)
     if((file_descriptor = socket(address_family, transport_type, transport_subtype)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Creation socket error: ");
+        perror("Creation socket error");
         exit(EXIT_FAILURE);
     }
 
     return file_descriptor;
+}
+
+/**
+ * @brief Funzione che permette la creazione di un file descriptor associato ad una socket con una famiglia di indirizzi
+ *        IPv4 ed un protocollo trasporto TCP
+ *
+ * @return File descriptor associato al socket creato
+ * */
+int SocketIPV4(void)
+{
+    /*
+     * Sfruttiamo la funzione "@Socket()" della libreria "@socket_utility.h" per ritornare un file descriptor associato
+     * ad una socket
+     * */
+    return Socket(AF_INET, SOCK_STREAM, 0);
 }
 
 /**
@@ -50,7 +65,7 @@ void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in* endpoint)
     if(bind(file_descriptor_to_bind, (struct sockaddr*)endpoint, sizeof(*endpoint)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Bind to endpoint error: ");
+        perror("Bind to endpoint error");
         exit(EXIT_FAILURE);
     }
 }
@@ -81,7 +96,28 @@ void Listen(int file_descriptor, int backlog_size)
     if(listen(file_descriptor, backlog_size) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Error while configuring the socket in listening: ");
+        perror("Error while configuring the socket in listening");
+        exit(EXIT_FAILURE);
+    }
+}
+
+/**
+ * @brief Tale funzione permette di connettere due socket "@file_descriptor_to_connect" ed il socket associato alla struttura "@destination_endpoint"
+ *
+ * @param file_descriptor_to_connect File descrittore sorgente da connettere con il socket associato alla struttura "@destination_endpoint"
+ * @param destination_endpoint Endopoint della destinazione da connettere con il file descrittore sorgente "@file_descriptor_to_connect"
+ * */
+void ConnectIPV4(int file_descriptor_to_connect, struct sockaddr_in* destination_endpoint)
+{
+    /*
+     * Attraverso la seguente funzione effettuiamo una richiesta al server di una Three way Handshake, ovvero richiediamo una
+     * connessione con il server. Inoltre, quest'ultima ritorna 0 in caso di successo, oppure -1 in caso di errore,
+     * configurando errno (numero dell'ultimo errore) per indicare l'errore
+     * */
+    if(connect(file_descriptor_to_connect, (struct sockaddr*)destination_endpoint, sizeof(*destination_endpoint)) < 0)
+    {
+        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+        perror("Connect IPv4 error");
         exit(EXIT_FAILURE);
     }
 }
@@ -110,7 +146,7 @@ int AcceptIPV4(int listen_file_descriptor, struct sockaddr_in* client_address, s
     if((connection_file_descriptor = accept(listen_file_descriptor, (struct sockaddr *)client_address, client_size)) < 0)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
-        perror("Error while trying to accept a new connection: ");
+        perror("Error while trying to accept a new connection");
         exit(EXIT_FAILURE);
     }
 
@@ -156,7 +192,7 @@ size_t FullRead(int file_descriptor, void* buffer, size_t n_bytes)
             else
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
-                perror("Reading error: ");
+                perror("Reading error");
                 exit((int)n_read);
             }
         }
@@ -215,7 +251,7 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
             else
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
-                perror("Writing error: ");
+                perror("Writing error");
                 exit((int)n_written);
             }
         }

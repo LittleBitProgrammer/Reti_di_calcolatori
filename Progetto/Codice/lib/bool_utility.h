@@ -1,0 +1,6 @@
+#ifndef BOOL_UTILITY_H
+#define BOOL_UTILITY_H
+//TODO: AGGIUNGERE COMMENTI OVUNQUE!!!!!
+typedef enum {FALSE, TRUE} bool;
+
+#endif // BOOL_UTILITY_H
