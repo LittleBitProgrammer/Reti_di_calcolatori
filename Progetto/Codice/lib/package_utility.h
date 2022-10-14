@@ -3,10 +3,16 @@
 
 #include <time.h>
 
-typedef struct __attribute__((__packed__))
+typedef struct
 {
     char card_code[21];
     struct tm vaccination_date;
 } Vaccinated_package;
+
+typedef struct
+{
+    Vaccinated_package vaccinated_package;
+    struct tm expiration_date;
+} Subscribe_package;
 
 #endif //PACKAGE_UTILITY_H

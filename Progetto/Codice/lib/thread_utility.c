@@ -10,6 +10,9 @@
                                 */
 #include "thread_utility.h"
 #include "package_utility.h"
+#include "bool_utility.h"
+#include "file_utility.h"
+#include "date_utility.h"
 
 
 /**
@@ -110,6 +113,7 @@ void* vaccination_center_handler(void* args)
             int subscription_socket;
             struct sockaddr_in central_server_address;
             const char central_server_ip[] = "127.0.0.1";
+            bool is_card_code_written;
 
             /*
              *
@@ -202,9 +206,46 @@ void* vaccination_center_handler(void* args)
             FullWrite(subscription_socket, command_writer_buffer, CMD_BUFFER_LEN);
             FullWrite(subscription_socket, vaccinated_response_package.card_code, sizeof(vaccinated_response_package.card_code));
 
-            //TODO: poi mandare il pacchetto al suddetto
+            if(FullRead(subscription_socket, &is_card_code_written, sizeof(bool)) > 0)
+            {
+                /*  */
+                fprintf(stderr, "Server disconnesso");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                close(subscription_socket);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
 
-            close(subscription_socket);
+            if(!is_card_code_written)
+            {
+                bool is_subscribed;
+                struct tm expiration_date = expiration_date_calculation(vaccinated_response_package.vaccination_date);
+                Subscribe_package sub_client_vaccination = {.vaccinated_package.vaccination_date = vaccinated_response_package.vaccination_date,
+                                                            .expiration_date = expiration_date};
+                strcpy(sub_client_vaccination.vaccinated_package.card_code, vaccinated_response_package.card_code);
+
+                strcpy(command_writer_buffer, "CMD_MEM");
+
+                FullWrite(subscription_socket, command_writer_buffer, CMD_BUFFER_LEN);
+                FullWrite(subscription_socket, &sub_client_vaccination, sizeof(sub_client_vaccination));
+
+                FullRead(subscription_socket, &is_subscribed, sizeof(bool));
+
+                close(subscription_socket);
+
+                FullWrite(connection_file_descriptor, &is_subscribed, sizeof(bool));
+            }
+            else
+            {
+                close(subscription_socket);
+
+                is_card_code_written = !is_card_code_written;
+                FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(bool));
+            }
 
             //TODO: poi mandare la response al client
         }
@@ -218,6 +259,7 @@ void* central_server_handler(void* args)
     int  connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
     char command_reader_buffer[CMD_BUFFER_LEN];
     char reader_buffer[21];
+    bool is_card_code_written;
 
     while(1)
     {
@@ -281,8 +323,66 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            printf("CIUA\n");
-            //TODO: controllare se il codice è già presente nel file
+            is_card_code_written = is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer);
+            FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(bool));
+        }
+        else if(!strcmp(command_reader_buffer, "CMD_MEM"))
+        {
+            Subscribe_package sub_client_vaccination;
+            char file_writer_buffer[MAX_FILE_LINE_SIZE];
+            char expiration_date_buffer[MAX_DATE_LEN];
+            char last_update_date_buffer[MAX_DATE_LEN];
+            bool is_subscribed;
+
+
+            if(FullRead(connection_file_descriptor, &sub_client_vaccination, sizeof(sub_client_vaccination)) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Server centro vaccinale disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            strftime(expiration_date_buffer, MAX_DATE_LEN, "%d/%m/%Y", &(sub_client_vaccination.expiration_date));
+            strftime(last_update_date_buffer, MAX_DATE_LEN, "%d/%m/%Y", &(sub_client_vaccination.vaccinated_package.vaccination_date));
+
+            snprintf(file_writer_buffer, MAX_FILE_LINE_SIZE, "%s %s Vaccinazione %s", sub_client_vaccination.vaccinated_package.card_code,
+                                                                                                    expiration_date_buffer,
+                                                                                                    last_update_date_buffer);
+
+            is_subscribed = subscribe_vaccinated_client(file_writer_buffer);
+            FullWrite(connection_file_descriptor, &is_subscribed, sizeof(bool));
+
+            if(!is_subscribed)
+            {
+                fprintf(stderr, "Errore durante l'inserimento a file del vaccinato\n");
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+            else
+            {
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
         }
     }
 }

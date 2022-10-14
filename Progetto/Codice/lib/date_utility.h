@@ -6,10 +6,12 @@
 
 #define MAX_YEAR 2022
 #define MIN_YEAR 2020
+#define MAX_DATE_LEN 11
 
 bool input_date(struct tm*, struct tm*);
 bool date_valid(int, int, int);
 bool is_leap(int);
 int compare_date(struct tm*, struct tm*);
+struct tm expiration_date_calculation(struct tm);
 
 #endif // DATA_UTILITY_H
