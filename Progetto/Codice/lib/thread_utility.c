@@ -113,7 +113,7 @@ void* vaccination_center_handler(void* args)
             int subscription_socket;
             struct sockaddr_in central_server_address;
             const char central_server_ip[] = "127.0.0.1";
-            bool is_card_code_written;
+            Error_handling is_card_code_written;
 
             /*
              *
@@ -206,7 +206,7 @@ void* vaccination_center_handler(void* args)
             FullWrite(subscription_socket, command_writer_buffer, CMD_BUFFER_LEN);
             FullWrite(subscription_socket, vaccinated_response_package.card_code, sizeof(vaccinated_response_package.card_code));
 
-            if(FullRead(subscription_socket, &is_card_code_written, sizeof(bool)) > 0)
+            if(FullRead(subscription_socket, &is_card_code_written, sizeof(Error_handling)) > 0)
             {
                 /*  */
                 fprintf(stderr, "Server disconnesso");
@@ -220,9 +220,9 @@ void* vaccination_center_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            if(!is_card_code_written)
+            if(!is_card_code_written.result_flag)
             {
-                bool is_subscribed;
+                Error_handling is_subscribed;
                 struct tm expiration_date = expiration_date_calculation(vaccinated_response_package.vaccination_date);
                 Subscribe_package sub_client_vaccination = {.vaccinated_package.vaccination_date = vaccinated_response_package.vaccination_date,
                                                             .expiration_date = expiration_date};
@@ -233,18 +233,18 @@ void* vaccination_center_handler(void* args)
                 FullWrite(subscription_socket, command_writer_buffer, CMD_BUFFER_LEN);
                 FullWrite(subscription_socket, &sub_client_vaccination, sizeof(sub_client_vaccination));
 
-                FullRead(subscription_socket, &is_subscribed, sizeof(bool));
+                FullRead(subscription_socket, &is_subscribed, sizeof(Error_handling));
 
                 close(subscription_socket);
 
-                FullWrite(connection_file_descriptor, &is_subscribed, sizeof(bool));
+                FullWrite(connection_file_descriptor, &is_subscribed, sizeof(Error_handling));
             }
             else
             {
                 close(subscription_socket);
 
-                is_card_code_written = !is_card_code_written;
-                FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(bool));
+                is_card_code_written.result_flag = !is_card_code_written.result_flag;
+                FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(Error_handling));
             }
 
             //TODO: poi mandare la response al client
@@ -259,7 +259,7 @@ void* central_server_handler(void* args)
     int  connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
     char command_reader_buffer[CMD_BUFFER_LEN];
     char reader_buffer[21];
-    bool is_card_code_written;
+    Error_handling is_card_code_written;
 
     while(1)
     {
@@ -324,7 +324,7 @@ void* central_server_handler(void* args)
             }
 
             is_card_code_written = is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer);
-            FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(bool));
+            FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(Error_handling));
         }
         else if(!strcmp(command_reader_buffer, "CMD_MEM"))
         {
@@ -332,7 +332,7 @@ void* central_server_handler(void* args)
             char file_writer_buffer[MAX_FILE_LINE_SIZE];
             char expiration_date_buffer[MAX_DATE_LEN];
             char last_update_date_buffer[MAX_DATE_LEN];
-            bool is_subscribed;
+            Error_handling is_subscribed;
 
 
             if(FullRead(connection_file_descriptor, &sub_client_vaccination, sizeof(sub_client_vaccination)) > 0)
@@ -362,9 +362,9 @@ void* central_server_handler(void* args)
                                                                                                     last_update_date_buffer);
 
             is_subscribed = subscribe_vaccinated_client(file_writer_buffer);
-            FullWrite(connection_file_descriptor, &is_subscribed, sizeof(bool));
+            FullWrite(connection_file_descriptor, &is_subscribed, sizeof(Error_handling));
 
-            if(!is_subscribed)
+            if(!is_subscribed.result_flag)
             {
                 fprintf(stderr, "Errore durante l'inserimento a file del vaccinato\n");
                 close(connection_file_descriptor);

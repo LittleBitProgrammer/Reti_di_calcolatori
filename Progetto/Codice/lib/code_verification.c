@@ -66,5 +66,5 @@ bool check_region_code(char *code)
     *(sub_code + 5) = '\0';
 
     /* Ritorno della funzione per il controllo se il codice esiste o meno */
-    return is_code_written_in_file(REGION_FILE_NAME, sub_code);
+    return is_code_written_in_file(REGION_FILE_NAME, sub_code).result_flag;
 }
