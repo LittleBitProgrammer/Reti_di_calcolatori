@@ -5,6 +5,7 @@
 #include <unistd.h>                 /* Importata per utilizzare la costante "@STDIN_FILENO" */
 #include "lib/sockets_utility.h"    /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 #include "lib/menu_utility.h"       /* Importata per utilizzare la funzione "@print_vaccinated_menu()" */
+#include "lib/package_utility.h"    /*  */
 
 #define CL 21
 
@@ -15,13 +16,17 @@ int main(int argc, char **argv)
      * ==========================
      */
     int                client_file_descriptor;                                       /* File descriptor associato al socket del client */
-    struct sockaddr_in server_address;                                               /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del server */
-    struct hostent*    server_dns;                                                   /* Struttura contenente varie informazioni sull'host server, utile ad effettuare un'operazione
-                                                                                        DNS (Risoluzione diretta) */
-    char               command_writer_buffer[CMD_BUFFER_LEN];                        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
+    struct sockaddr_in server_address;                                               /* Struttura utile a rappresentare un Endpoint, in
+                                                                                        particolare l'indirizzo del server */
+    struct hostent*    server_dns;                                                   /* Struttura contenente varie informazioni sull'host server,
+                                                                                        utile ad effettuare un'operazione DNS (Risoluzione diretta) */
+    char               command_writer_buffer[CMD_BUFFER_LEN];                        /* Buffer utile all'operazione di scrittura del
+                                                                                        comando da inviare sul file descriptor del socket */
     struct tm*         server_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
-    struct tm*         client_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo di vaccinazione da parte del client */
+    struct tm*         client_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo di vaccinazione
+                                                                                        da parte del client */
     char*              verification_code = (char *)malloc(CL * sizeof(char));   /*  */
+    Vaccinated_package vaccinated_request_package;                                   /*  */
 
     /*
      * ==========================
@@ -52,6 +57,7 @@ int main(int argc, char **argv)
     bzero(client_daytime, sizeof(*client_daytime));
     bzero(server_daytime, sizeof(*server_daytime));
     bzero(verification_code, CL);
+    bzero(&vaccinated_request_package, sizeof(vaccinated_request_package));
 
     /*
      * ==========================
@@ -192,6 +198,9 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    /*  */
+    vaccinated_request_package.vaccination_date = *client_daytime;
+    strcpy(vaccinated_request_package.card_code, verification_code);
 
     /* Copiamo la stringa "CMD_SUB" all'interno dell'array di caratteri "@command_writer_buffer" */
     strcpy(command_writer_buffer, "CMD_SUB");
@@ -199,6 +208,8 @@ int main(int argc, char **argv)
     /* Effettuiamo una richiesta daytime al server con le informazioni contenute nel "@command_writer_buffer" */
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
 
+    /*  */
+    FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
 
     /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
     free(server_daytime);

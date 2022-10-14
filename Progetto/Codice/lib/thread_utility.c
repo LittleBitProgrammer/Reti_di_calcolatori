@@ -9,6 +9,8 @@
                                         1. CMD_BUFFER_LEN
                                 */
 #include "thread_utility.h"
+#include "package_utility.h"
+
 
 /**
  * @brief
@@ -17,15 +19,18 @@
  * */
 void* vaccination_center_handler(void* args)
 {
+    /* Rende STDOUT non bufferizzato */
+    (void)setvbuf(stdout, NULL, _IONBF, 0);
     /* ==========================
      * =       VARIABLES        =
      * ==========================
      * */
-    int        connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
-    char       command_reader_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di lettura del comando inviato descriptor del socket */
-    char       command_writer_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
-    time_t     server_daytime;                               /* Variabile utile a contenere un valore intero rappresentante il numero di secondi da 00:00, 1 gennaio 1970 */
-    struct tm* local_daytime;                                /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
+    int                connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    char               command_reader_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di lettura del comando inviato descriptor del socket */
+    char               command_writer_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
+    time_t             server_daytime;                               /* Variabile utile a contenere un valore intero rappresentante il numero di secondi da 00:00, 1 gennaio 1970 */
+    struct tm*         local_daytime;                                /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
+    Vaccinated_package vaccinated_response_package;                  /*  */
 
     while(1)
     {
@@ -40,6 +45,7 @@ void* vaccination_center_handler(void* args)
          * */
         bzero(command_reader_buffer, CMD_BUFFER_LEN);
         bzero(command_writer_buffer, CMD_BUFFER_LEN);
+        bzero(&vaccinated_response_package, sizeof(vaccinated_response_package));
 
         /*
          * ==================================
@@ -104,7 +110,8 @@ void* vaccination_center_handler(void* args)
             /*
              *
              * */
-
+            FullRead(connection_file_descriptor, &vaccinated_response_package, sizeof(vaccinated_response_package));
+            
         }
     }
 }
