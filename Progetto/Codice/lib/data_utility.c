@@ -1,8 +1,15 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "data_utility.h"
+#include <stdio.h>              /*  */
+#include <string.h>             /*  */
+#include "data_utility.h"       /*  */
 
+/**
+ * @brief
+ *
+ * @param daytime
+ * @param local_time
+ *
+ * @return
+ * */
 bool input_date(struct tm* daytime, struct tm* local_time)
 {
     if(scanf("%d/%d/%d", &(daytime->tm_mday), &(daytime->tm_mon), &(daytime->tm_year)) < 3)
@@ -40,6 +47,15 @@ bool input_date(struct tm* daytime, struct tm* local_time)
     return TRUE;
 }
 
+/**
+ * @brief
+ *
+ * @param day
+ * @param month
+ * @param year
+ *
+ * @return
+ * */
 bool date_valid(int day, int month, int year)
 {
     if(year < MIN_YEAR || year > MAX_YEAR)
@@ -79,15 +95,26 @@ bool date_valid(int day, int month, int year)
     return TRUE;
 }
 
-
-/*
- * Funzione per controllare se un anno è bisestile o no, se l'anno è bisestile ritorna TRUE
+/**
+ * @brief Funzione per controllare se un anno è bisestile o no, se l'anno è bisestile ritorna TRUE
+ *
+ * @param year
+ *
+ * @return
  * */
 bool is_leap(int year)
 {
     return (((year % 4) == 0 && (year % 100) != 0) || (year % 4) == 0 && (year % 100) == 0 && (year % 400) == 0);
 }
 
+/**
+ * @brief
+ *
+ * @param vaccination_date
+ * @param local_daytime
+ *
+ * @return
+ * */
 int compare_date(struct tm* vaccination_date, struct tm* local_daytime)
 {
     time_t vaccination_date_time = mktime(vaccination_date);

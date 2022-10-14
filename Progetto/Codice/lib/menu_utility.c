@@ -1,7 +1,15 @@
-#include <stdio.h>
-#include "menu_utility.h"
-#include "data_utility.h"
+#include <stdio.h>            /*  */
+#include "menu_utility.h"     /*  */
+#include "data_utility.h"     /*  */
 
+/**
+ * @brief
+ *
+ * @param vaccination_date
+ * @param  local_daytime
+ *
+ * @return
+ * */
 bool run_vaccinated_menu(struct tm* vaccination_date, struct tm* local_daytime)
 {
     print_logo();
@@ -17,6 +25,9 @@ bool run_vaccinated_menu(struct tm* vaccination_date, struct tm* local_daytime)
     return TRUE;
 }
 
+/**
+ * @brief
+ * */
 void print_logo(void)
 {
     printf("   ______    ___   ____   ____  _____  ______      __    ______ \n");

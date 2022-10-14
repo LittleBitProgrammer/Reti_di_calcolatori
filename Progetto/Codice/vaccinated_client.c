@@ -5,7 +5,6 @@
 #include <unistd.h>                 /* Importata per utilizzare la costante "@STDIN_FILENO" */
 #include "lib/sockets_utility.h"    /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 #include "lib/menu_utility.h"       /* Importata per utilizzare la funzione "@print_vaccinated_menu()" */
-#include "lib/data_utility.h"
 
 int main(int argc, char **argv)
 {
@@ -19,7 +18,7 @@ int main(int argc, char **argv)
                                                                                         DNS (Risoluzione diretta) */
     char               command_writer_buffer[CMD_BUFFER_LEN];                        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
     struct tm*         server_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
-    struct tm*         client_daytime = (struct tm*)malloc(sizeof(struct tm));
+    struct tm*         client_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo di vaccinazione da parte del client */
 
     /*
      * ==========================
@@ -42,9 +41,13 @@ int main(int argc, char **argv)
      * ==========================
      * */
 
-    /* Azzeriamo i byte che compongono l'array "@command_writer_buffer" per evitare di avere valori raw all'interno di quest'ultimo */
+    /*
+     * Azzeriamo i byte che compongono l'array "@command_writer_buffer", "@client_daytime" e "@server_daytime" per evitare di avere valori raw
+     * all'interno di quest'ultimo
+     * */
     bzero(command_writer_buffer, CMD_BUFFER_LEN);
     bzero(client_daytime, sizeof(*client_daytime));
+    bzero(server_daytime, sizeof(*server_daytime));
 
     /*
      * ==========================
@@ -125,7 +128,6 @@ int main(int argc, char **argv)
     /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
     ConnectIPV4(client_file_descriptor, &server_address);
 
-
     /*
      * ==================================
      * =        DAYTIME  REQUEST        =
@@ -155,7 +157,12 @@ int main(int argc, char **argv)
     {
         /* Caso in cui il server si sia disconnesso */
         fprintf(stderr, "Server disconnesso\n");
+        /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
+        free(server_daytime);
+        free(client_daytime);
+        /* Chiusura del socket file descriptor connesso al server */
         close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
         exit(EXIT_FAILURE);
     }
 
@@ -171,9 +178,12 @@ int main(int argc, char **argv)
     //TODO: Aggiungere la possibilità di accettare il codice
     if(!run_vaccinated_menu(client_daytime, server_daytime))
     {
+        /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
         free(server_daytime);
         free(client_daytime);
+        /* Chiusura del socket file descriptor connesso al server */
         close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
         exit(EXIT_FAILURE);
     }
 

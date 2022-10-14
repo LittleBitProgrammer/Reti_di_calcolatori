@@ -10,6 +10,11 @@
                                 */
 #include "thread_utility.h"
 
+/**
+ * @brief
+ *
+ * @param args
+ * */
 void* vaccination_center_handler(void* args)
 {
     /* ==========================
