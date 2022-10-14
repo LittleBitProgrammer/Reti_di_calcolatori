@@ -11,7 +11,6 @@
  *
  * @return
  * */
-//TODO: Cambiare nomi di tutte le variabili
 bool is_code_written_in_file(char *file_name, char *code)
 {
     /* Buffer di lettura da file */
@@ -33,6 +32,11 @@ bool is_code_written_in_file(char *file_name, char *code)
     {
         fgets(line, 56, file_codes);
         tokens = strtok(line, " ");
+        /*
+         * Cerca la prima occorrenza della seconda stringa nella prima stringa e restituisce l'indice. Così è possibile cambiargli
+         * il valore a '\0'
+         * */
+        tokens[strcspn(tokens, "\n")] = '\0';
         if (!strcmp(tokens, code))
         {
             /* Deallocazione della memoria */

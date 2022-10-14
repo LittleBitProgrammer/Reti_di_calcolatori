@@ -6,6 +6,8 @@
 #include "lib/sockets_utility.h"    /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 #include "lib/menu_utility.h"       /* Importata per utilizzare la funzione "@print_vaccinated_menu()" */
 
+#define CL 21
+
 int main(int argc, char **argv)
 {
     /* ==========================
@@ -19,6 +21,7 @@ int main(int argc, char **argv)
     char               command_writer_buffer[CMD_BUFFER_LEN];                        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
     struct tm*         server_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
     struct tm*         client_daytime = (struct tm*)malloc(sizeof(struct tm));  /* Struttura utile a memorizzare data e tempo di vaccinazione da parte del client */
+    char*              verification_code = (char *)malloc(CL * sizeof(char));   /*  */
 
     /*
      * ==========================
@@ -48,6 +51,7 @@ int main(int argc, char **argv)
     bzero(command_writer_buffer, CMD_BUFFER_LEN);
     bzero(client_daytime, sizeof(*client_daytime));
     bzero(server_daytime, sizeof(*server_daytime));
+    bzero(verification_code, CL);
 
     /*
      * ==========================
@@ -160,6 +164,7 @@ int main(int argc, char **argv)
         /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
         free(server_daytime);
         free(client_daytime);
+        free(verification_code);
         /* Chiusura del socket file descriptor connesso al server */
         close(client_file_descriptor);
         /* Terminiamo con successo il processo client */
@@ -175,17 +180,18 @@ int main(int argc, char **argv)
     /*
      *
      * */
-    //TODO: Aggiungere la possibilità di accettare il codice
-    if(!run_vaccinated_menu(client_daytime, server_daytime))
+    if(!run_vaccinated_menu(client_daytime, server_daytime, verification_code))
     {
         /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
         free(server_daytime);
         free(client_daytime);
+        free(verification_code);
         /* Chiusura del socket file descriptor connesso al server */
         close(client_file_descriptor);
         /* Terminiamo con successo il processo client */
         exit(EXIT_FAILURE);
     }
+
 
     /* Copiamo la stringa "CMD_SUB" all'interno dell'array di caratteri "@command_writer_buffer" */
     strcpy(command_writer_buffer, "CMD_SUB");
@@ -197,24 +203,9 @@ int main(int argc, char **argv)
     /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
     free(server_daytime);
     free(client_daytime);
+    free(verification_code);
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);
     /* Terminiamo con successo il processo client */
     exit(EXIT_SUCCESS);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

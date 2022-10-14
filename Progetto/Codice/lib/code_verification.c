@@ -13,13 +13,13 @@
  * */
 bool insert_card_code(char* code)
 {
-    int code_len = strlen(code);
+    size_t code_len = strlen(code);
 
     /* Controllo se sono stati digitati solo numeri*/
     if(is_digits_only(code))
     {
         /* Caso in cui la lunghezza del codice sia piu corta */
-        if (code_len < MAX_CODE_LEN || code_len > MAX_CODE_LEN)
+        if (code_len < (MAX_CODE_LEN - 1) || code_len > (MAX_CODE_LEN - 1))
         {
             /* Caso in cui la lunghezza del codice sia piu lunga o più corta*/
             fprintf(stderr,"Lunghezza codice errata\n");
@@ -37,10 +37,15 @@ bool insert_card_code(char* code)
             {
                 return TRUE;
             }
+            else
+            {
+                fprintf(stderr, "Codice di verifica non valido\n");
+                return FALSE;
+            }
         }
     }
 
-    fprintf(stderr, "Non sono solo numeri\n");
+    fprintf(stderr, "Il codice inserito non è composto da soli numeri\n");
     return FALSE;
 }
 
