@@ -225,13 +225,13 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    if(is_green_pass_obtained.result_flag)
-    {
-        printf("Caricato con successo\n");
-    }
-    else if(is_green_pass_obtained.write_file_flag || is_green_pass_obtained.read_file_flag || is_green_pass_obtained.open_file_flag)
+    if(is_green_pass_obtained.write_file_flag || is_green_pass_obtained.read_file_flag || is_green_pass_obtained.open_file_flag)
     {
         fprintf(stderr,"Anomalia durante l'operazione del server\n");
+    }
+    else if(is_green_pass_obtained.result_flag)
+    {
+        printf("Caricato con successo\n");
     }
     else
     {

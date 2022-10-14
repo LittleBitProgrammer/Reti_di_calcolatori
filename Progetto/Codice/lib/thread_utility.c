@@ -220,12 +220,27 @@ void* vaccination_center_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            if(!is_card_code_written.result_flag)
+            if(is_card_code_written.open_file_flag)
+            {
+                close(subscription_socket);
+
+                is_card_code_written.result_flag = !is_card_code_written.result_flag;
+                FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(Error_handling));
+
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+            else if(!is_card_code_written.result_flag)
             {
                 Error_handling is_subscribed;
                 struct tm expiration_date = expiration_date_calculation(vaccinated_response_package.vaccination_date);
                 Subscribe_package sub_client_vaccination = {.vaccinated_package.vaccination_date = vaccinated_response_package.vaccination_date,
-                                                            .expiration_date = expiration_date};
+                        .expiration_date = expiration_date};
                 strcpy(sub_client_vaccination.vaccinated_package.card_code, vaccinated_response_package.card_code);
 
                 strcpy(command_writer_buffer, "CMD_MEM");
