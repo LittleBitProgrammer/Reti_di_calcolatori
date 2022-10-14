@@ -111,7 +111,17 @@ void* vaccination_center_handler(void* args)
              *
              * */
             FullRead(connection_file_descriptor, &vaccinated_response_package, sizeof(vaccinated_response_package));
-            
+
+            //TODO: creare la connessione con il server centrale e poi mandare il comando e poi mandare il pacchetto al suddetto e poi chiudere la connessione e poi mandare la response al client
         }
+
+        //TODO: caso default
     }
+}
+
+void* central_server_handler(void* args)
+{
+    int                 connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+
+    
 }
