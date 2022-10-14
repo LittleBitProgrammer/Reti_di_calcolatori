@@ -44,6 +44,7 @@ int main(int argc, char **argv)
 
     /* Azzeriamo i byte che compongono l'array "@command_writer_buffer" per evitare di avere valori raw all'interno di quest'ultimo */
     bzero(command_writer_buffer, CMD_BUFFER_LEN);
+    bzero(client_daytime, sizeof(*client_daytime));
 
     /*
      * ==========================
@@ -167,22 +168,14 @@ int main(int argc, char **argv)
     /*
      *
      * */
-    print_vaccinated_menu();
-
-    // TODO: portare questo nel blocco zeroing
-    bzero(client_daytime, sizeof(*client_daytime));
-    /*
-    if(scanf("%d/%d/%d", &(client_daytime->tm_mday), &(client_daytime->tm_mon), &(client_daytime->tm_year)) < 3)
+    //TODO: Aggiungere la possibilità di accettare il codice
+    if(!run_vaccinated_menu(client_daytime, server_daytime))
     {
-        fprintf(stderr, "Formato data di vaccinazione non valido");
         free(server_daytime);
         free(client_daytime);
         close(client_file_descriptor);
         exit(EXIT_FAILURE);
     }
-
-    if()
-    */
 
     /* Copiamo la stringa "CMD_SUB" all'interno dell'array di caratteri "@command_writer_buffer" */
     strcpy(command_writer_buffer, "CMD_SUB");

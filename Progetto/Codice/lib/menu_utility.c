@@ -1,11 +1,20 @@
 #include <stdio.h>
 #include "menu_utility.h"
+#include "data_utility.h"
 
-void print_vaccinated_menu(void)
+bool run_vaccinated_menu(struct tm* vaccination_date, struct tm* local_daytime)
 {
     print_logo();
     printf("Benvenuti nel centro vaccinale.\n\n");
     printf("Inserire data di vaccinazione nel formato DD/MM/YYYY: ");
+
+    if(!input_date(vaccination_date, local_daytime))
+    {
+        return FALSE;
+    }
+
+    /*TODO: Aggiungere possibilità di mettere il codice*/
+    return TRUE;
 }
 
 void print_logo(void)
