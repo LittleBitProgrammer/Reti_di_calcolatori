@@ -33,7 +33,7 @@ typedef struct
     bool is_green_pass_valid;
     struct tm expiration_date;
     struct tm last_update;
-    char* motivation;
+    char motivation[13];
     File_flags file_flags;
 } Reviser_package;
 

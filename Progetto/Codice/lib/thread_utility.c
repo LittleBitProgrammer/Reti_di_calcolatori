@@ -371,8 +371,8 @@ void* central_server_handler(void* args)
             strftime(last_update_date_buffer, MAX_DATE_LEN, "%d/%m/%Y", &(sub_client_vaccination.vaccinated_package.vaccination_date));
 
             snprintf(file_writer_buffer, MAX_FILE_LINE_SIZE, "%s %s Vaccinazione %s", sub_client_vaccination.vaccinated_package.card_code,
-                                                                                                    expiration_date_buffer,
-                                                                                                    last_update_date_buffer);
+                                                                                                       expiration_date_buffer,
+                                                                                                       last_update_date_buffer);
 
             is_subscribed = subscribe_vaccinated_client(file_writer_buffer);
             FullWrite(connection_file_descriptor, &is_subscribed, sizeof(File_result));
@@ -399,6 +399,8 @@ void* central_server_handler(void* args)
         }
         else if(!strcmp(command_reader_buffer, "CMD_REV"))
         {
+            Reviser_package reviser_package;
+
             if(FullRead(connection_file_descriptor, reader_buffer, 21) > 0)
             {
                 /*
@@ -418,7 +420,21 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
+            if(generate_reviser_response(&reviser_package, reader_buffer) != NULL)
+            {
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
 
+            FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
+
+            /* Chiusura del socket file descriptor connesso al client */
+            close(connection_file_descriptor);
         }
     }
 }
@@ -495,6 +511,7 @@ void* assistant_server_handler(void* args) {
         int reviser_socket;
         struct sockaddr_in central_server_address;
         const char central_server_ip[] = "127.0.0.1";
+        Reviser_package reviser_package;
 
         /* ==========================
          * =    SOCKET CREATION     =
@@ -563,11 +580,27 @@ void* assistant_server_handler(void* args) {
         FullWrite(reviser_socket, command_reader_buffer, CMD_BUFFER_LEN);
         FullWrite(reviser_socket, code_reader_buffer, 21);
 
+        if(FullRead(reviser_socket, &reviser_package, sizeof(reviser_package)) > 0)
+        {
+            /*
+             * ==================================
+             * =         CLOSE  THREAD          =
+             * ==================================
+             * */
 
-
+            /* Caso in cui il client si sia disconnesso */
+            fprintf(stderr, "Client disconnesso\n");
+            /* Chiusura del socket file descriptor connesso al client */
+            close(reviser_socket);
+            close(connection_file_descriptor);
+            /*
+             * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+             * reperire l'informazione relativa al prossimo thread disponibile
+             * */
+            pthread_exit(NULL);
+        }
 
         close(reviser_socket);
-
     }
 }
 
