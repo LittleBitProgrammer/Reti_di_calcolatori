@@ -16,7 +16,7 @@ File_flags* generate_reviser_response(Reviser_package* reviser_package, char* ca
         reviser_package->file_flags.open_file_flag = 1;
         reviser_package->file_flags.write_file_flag = 0;
 
-        fprintf(stderr, "Errore nell'apertura del file!\n");
+        fprintf(stderr, "3.Errore nell'apertura del file!\n");
         return &(reviser_package->file_flags);
     }
 

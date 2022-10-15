@@ -51,7 +51,7 @@ bool run_reviser_menu(char *card_code)
     printf("Benvenuti sulla piattaforma Green Pass.\n\n");
     printf("Inserire codice tessera sanitaria (controllare il punto '8' sul retro della tessera)"
                   "di cui si vuole conoscere la scadenza Green Pass: ");
-    fscanf(stdin, "%s", card_code);
+    fscanf(stdin,"%s", card_code);
 
     free_input_buffer();
 

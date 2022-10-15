@@ -122,24 +122,9 @@ int main(int argc, char **argv)
     ConnectIPV4(client_file_descriptor, &server_address);
 
     /*
-     * ==================================
-     * =          CMD_REQUEST           =
-     * ==================================
-     * */
-
-    strcpy(command_writer_buffer, "CMD_REV");
-
-    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
-
-
-    /*
      * ====================
      * =       MENU       =
      * ====================
-     * */
-
-    /*
-     *
      * */
     if(!run_reviser_menu(writer_buffer))
     {
@@ -148,6 +133,15 @@ int main(int argc, char **argv)
         /* Terminiamo con successo il processo client */
         exit(EXIT_FAILURE);
     }
+
+    /*
+     * ==================================
+     * =          CMD_REQUEST           =
+     * ==================================
+     * */
+
+    strcpy(command_writer_buffer, "CMD_REV");
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
 
     /*
      * ==================================

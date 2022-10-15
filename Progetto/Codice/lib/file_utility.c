@@ -29,7 +29,7 @@ File_result is_code_written_in_file(char *file_name, char *code)
         file_errors.file_flags.open_file_flag = 1;
         file_errors.file_flags.write_file_flag = 0;
 
-        fprintf(stderr, "Errore nell'apertura del file!\n");
+        fprintf(stderr, "2. Errore nell'apertura del file!\n");
         return file_errors;
     }
 
@@ -99,7 +99,7 @@ File_result subscribe_vaccinated_client(char* vaccinated_client_info)
         file_errors.file_flags.open_file_flag = 1;
         file_errors.file_flags.write_file_flag = 0;
 
-        fprintf(stderr, "Errore nell'apertura del file!\n");
+        fprintf(stderr, "1. Errore nell'apertura del file!\n");
         return file_errors;
     }
 
