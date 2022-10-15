@@ -12,6 +12,6 @@ bool input_date(struct tm*, struct tm*);
 bool date_valid(int, int, int);
 bool is_leap(int);
 int compare_date(struct tm*, struct tm*);
-struct tm expiration_date_calculation(struct tm);
+struct tm add_month_to_date(struct tm, int);
 
 #endif // DATA_UTILITY_H

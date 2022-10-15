@@ -2,6 +2,7 @@
 #define PACKAGE_UTILITY_H
 
 #include <time.h>
+#include "bool_utility.h"
 
 typedef struct
 {
@@ -14,5 +15,12 @@ typedef struct
     Vaccinated_package vaccinated_package;
     struct tm expiration_date;
 } Subscribe_package;
+
+typedef struct
+{
+    bool result_flag;
+    bool open_file_flag;
+    bool write_file_flag;
+} Vaccinated_response;
 
 #endif //PACKAGE_UTILITY_H
