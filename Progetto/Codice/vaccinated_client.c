@@ -27,6 +27,7 @@ int main(int argc, char **argv)
                                                                                         da parte del client */
     char*              verification_code = (char *)malloc(CL * sizeof(char));   /*  */
     Vaccinated_package vaccinated_request_package;                                   /*  */
+    Vaccinated_response     is_green_pass_obtained;                                       /*  */
 
     /*
      * ==========================
@@ -210,6 +211,32 @@ int main(int argc, char **argv)
 
     /*  */
     FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
+
+    /*  */
+    if(FullRead(client_file_descriptor, &is_green_pass_obtained, sizeof(Vaccinated_response)) > 0)
+    {
+        /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
+        free(server_daytime);
+        free(client_daytime);
+        free(verification_code);
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    if(is_green_pass_obtained.write_file_flag || is_green_pass_obtained.open_file_flag)
+    {
+        fprintf(stderr,"Anomalia durante l'operazione del server\n");
+    }
+    else if(is_green_pass_obtained.result_flag)
+    {
+        printf("Caricato con successo\n");
+    }
+    else
+    {
+        fprintf(stderr,"Errore nel caricamento\n");
+    }
 
     /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
     free(server_daytime);

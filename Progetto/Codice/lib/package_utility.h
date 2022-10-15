@@ -2,11 +2,25 @@
 #define PACKAGE_UTILITY_H
 
 #include <time.h>
+#include "bool_utility.h"
 
-typedef struct __attribute__((__packed__))
+typedef struct
 {
     char card_code[21];
     struct tm vaccination_date;
 } Vaccinated_package;
+
+typedef struct
+{
+    Vaccinated_package vaccinated_package;
+    struct tm expiration_date;
+} Subscribe_package;
+
+typedef struct
+{
+    bool result_flag;
+    bool open_file_flag;
+    bool write_file_flag;
+} Vaccinated_response;
 
 #endif //PACKAGE_UTILITY_H

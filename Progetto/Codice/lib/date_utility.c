@@ -1,6 +1,6 @@
 #include <stdio.h>              /*  */
 #include <string.h>             /*  */
-#include "data_utility.h"       /*  */
+#include "date_utility.h"       /*  */
 
 /**
  * @brief
@@ -128,4 +128,21 @@ int compare_date(struct tm* vaccination_date, struct tm* local_daytime)
     double seconds = difftime(local_time, vaccination_date_time);
 
     return (int)(seconds / (60 * 60 * 24));
+}
+
+/**
+ * @brief
+ *
+ * @param vaccination_date
+ *
+ * @return
+ * */
+struct tm add_month_to_date(struct tm vaccination_date, int months)
+{
+    struct tm expiration_date = vaccination_date;
+
+    expiration_date.tm_mon += months;
+    mktime(&expiration_date);
+
+    return expiration_date;
 }

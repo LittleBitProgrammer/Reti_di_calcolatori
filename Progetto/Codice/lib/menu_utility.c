@@ -1,6 +1,7 @@
 #include <stdio.h>              /*  */
+#include <string.h>
 #include "menu_utility.h"       /*  */
-#include "data_utility.h"       /*  */
+#include "date_utility.h"       /*  */
 #include "code_verification.h"
 #include "buffer_utility.h"     /*  */
 
@@ -27,8 +28,9 @@ bool run_vaccinated_menu(struct tm* vaccination_date, struct tm* local_daytime, 
 
     free_input_buffer();
 
-    fgets(verification_code, MAX_CODE_LEN, stdin);
+    fscanf(stdin, "%s", verification_code);
 
+    printf("%lu\n", strcspn(verification_code, "\n"));
     if(!insert_card_code(verification_code))
     {
         return FALSE;

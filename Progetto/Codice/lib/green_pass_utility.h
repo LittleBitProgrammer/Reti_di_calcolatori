@@ -1,0 +1,10 @@
+//
+// Created by roberto on 15/10/22.
+//
+
+#ifndef CODICE_GREEN_PASS_UTILITY_H
+#define CODICE_GREEN_PASS_UTILITY_H
+
+#define EXPIRATION_DURATION_MONTH 6
+
+#endif //CODICE_GREEN_PASS_UTILITY_H
