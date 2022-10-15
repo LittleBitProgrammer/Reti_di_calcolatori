@@ -261,8 +261,6 @@ void* vaccination_center_handler(void* args)
                 is_card_code_written.result_flag = !is_card_code_written.result_flag;
                 FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(Vaccinated_response));
             }
-
-            //TODO: poi mandare la response al client
         }
 
         //TODO: caso default
@@ -400,4 +398,9 @@ void* central_server_handler(void* args)
             }
         }
     }
+}
+
+void* assistant_server_handler(void* args)
+{
+
 }
