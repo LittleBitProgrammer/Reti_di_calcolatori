@@ -11,9 +11,9 @@
  *
  * @return
  * */
-Error_handling is_code_written_in_file(char *file_name, char *code)
+Vaccinated_response is_code_written_in_file(char *file_name, char *code)
 {
-    Error_handling file_errors;
+    Vaccinated_response file_errors;
 
     /* Buffer di lettura da file */
     char *line = (char *)malloc(56 * sizeof(char));
@@ -92,9 +92,9 @@ Error_handling is_code_written_in_file(char *file_name, char *code)
  *
  * @return
  * */
-Error_handling subscribe_vaccinated_client(char* vaccinated_client_info)
+Vaccinated_response subscribe_vaccinated_client(char* vaccinated_client_info)
 {
-    Error_handling file_errors;
+    Vaccinated_response file_errors;
     FILE *vaccinated_file;
 
     if((vaccinated_file = fopen(VACCINATED_FILE_NAME, "a")) == NULL)

@@ -27,7 +27,7 @@ int main(int argc, char **argv)
                                                                                         da parte del client */
     char*              verification_code = (char *)malloc(CL * sizeof(char));   /*  */
     Vaccinated_package vaccinated_request_package;                                   /*  */
-    Error_handling     is_green_pass_obtained;                                       /*  */
+    Vaccinated_response     is_green_pass_obtained;                                       /*  */
 
     /*
      * ==========================
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
     FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
 
     /*  */
-    if(FullRead(client_file_descriptor, &is_green_pass_obtained, sizeof(Error_handling)) > 0)
+    if(FullRead(client_file_descriptor, &is_green_pass_obtained, sizeof(Vaccinated_response)) > 0)
     {
         /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
         free(server_daytime);
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    if(is_green_pass_obtained.write_file_flag || is_green_pass_obtained.read_file_flag || is_green_pass_obtained.open_file_flag)
+    if(is_green_pass_obtained.write_file_flag || is_green_pass_obtained.open_file_flag)
     {
         fprintf(stderr,"Anomalia durante l'operazione del server\n");
     }

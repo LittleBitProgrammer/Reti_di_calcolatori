@@ -21,7 +21,6 @@ typedef struct
     bool result_flag;
     bool open_file_flag;
     bool write_file_flag;
-    bool read_file_flag;
-} Error_handling;
+} Vaccinated_response;
 
 #endif //PACKAGE_UTILITY_H

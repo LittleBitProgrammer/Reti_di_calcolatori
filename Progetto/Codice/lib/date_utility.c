@@ -137,11 +137,11 @@ int compare_date(struct tm* vaccination_date, struct tm* local_daytime)
  *
  * @return
  * */
-struct tm expiration_date_calculation(const struct tm vaccination_date)
+struct tm add_month_to_date(struct tm vaccination_date, int months)
 {
     struct tm expiration_date = vaccination_date;
 
-    expiration_date.tm_mon += 6;
+    expiration_date.tm_mon += months;
     mktime(&expiration_date);
 
     return expiration_date;

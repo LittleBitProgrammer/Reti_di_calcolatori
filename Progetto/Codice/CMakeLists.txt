@@ -34,7 +34,8 @@ add_executable(server_centro_vaccinale vaccination_center_server.c
                                        lib/sockets_utility.c lib/sockets_utility.h
                                        lib/bool_utility.h
                                        lib/file_utility.c lib/file_utility.h
-                                       lib/date_utility.c lib/date_utility.h)
+                                       lib/date_utility.c lib/date_utility.h
+                                       lib/green_pass_utility.c lib/green_pass_utility.h)
 
 # - server centrale
 add_executable(server_centrale central_server.c
