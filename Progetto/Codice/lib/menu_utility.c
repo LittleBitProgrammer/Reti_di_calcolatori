@@ -30,8 +30,32 @@ bool run_vaccinated_menu(struct tm* vaccination_date, struct tm* local_daytime, 
 
     fscanf(stdin, "%s", verification_code);
 
-    printf("%lu\n", strcspn(verification_code, "\n"));
     if(!insert_card_code(verification_code))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+/**
+ * @brief
+ *
+ * @param card_code
+ *
+ * @return
+ * */
+bool run_reviser_menu(char *card_code)
+{
+    print_logo();
+    printf("Benvenuti sulla piattaforma Green Pass.\n\n");
+    printf("Inserire codice tessera sanitaria (controllare il punto '8' sul retro della tessera)"
+                  "di cui si vuole conoscere la scadenza Green Pass: ");
+    fscanf(stdin, "%s", card_code);
+
+    free_input_buffer();
+
+    if(!insert_card_code(card_code))
     {
         return FALSE;
     }

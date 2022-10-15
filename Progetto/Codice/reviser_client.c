@@ -2,7 +2,9 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include "lib/sockets_utility.h"
+#include "lib/menu_utility.h"
 
 int main(int argc, char **argv)
 {
@@ -11,9 +13,11 @@ int main(int argc, char **argv)
      * ==========================
      */
 
-    int client_file_descriptor;
+    int                client_file_descriptor;
     struct sockaddr_in server_address;
-    struct hostent* server_dns;
+    struct hostent*    server_dns;
+    char               command_writer_buffer[CMD_BUFFER_LEN];
+    char               writer_buffer[21];
 
     /*
     * ==========================
@@ -35,12 +39,8 @@ int main(int argc, char **argv)
      * =    ZEROING  ARRAYS     =
      * ==========================
      * */
-
-    /*
-     * ==================================
-     * =        SERVER CREATION         =
-     * ==================================
-     * */
+    bzero(command_writer_buffer, CMD_BUFFER_LEN);
+    bzero(writer_buffer, 21);
 
     /*
      * ==========================
@@ -120,6 +120,43 @@ int main(int argc, char **argv)
 
     /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
     ConnectIPV4(client_file_descriptor, &server_address);
+
+    /*
+     * ==================================
+     * =          CMD_REQUEST           =
+     * ==================================
+     * */
+
+    strcpy(command_writer_buffer, "CMD_REV");
+
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+
+
+    /*
+     * ====================
+     * =       MENU       =
+     * ====================
+     * */
+
+    /*
+     *
+     * */
+    if(!run_reviser_menu(writer_buffer))
+    {
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * ==================================
+     * =        REVISOR REQUEST         =
+     * ==================================
+     * */
+
+    FullWrite(client_file_descriptor, writer_buffer, 21);
+
 
 
     /* Chiusura del socket file descriptor connesso al server */

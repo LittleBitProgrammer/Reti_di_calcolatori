@@ -21,6 +21,15 @@ typedef struct
     bool result_flag;
     bool open_file_flag;
     bool write_file_flag;
-} Vaccinated_response;
+} File_response;
+
+typedef struct
+{
+    bool is_green_pass_valid;
+    struct tm expiration_date;
+    struct tm last_update;
+    char* motivation;
+    File_response file_flags;
+} Reviser_package;
 
 #endif //PACKAGE_UTILITY_H

@@ -11,9 +11,9 @@
  *
  * @return
  * */
-Vaccinated_response is_code_written_in_file(char *file_name, char *code)
+File_response is_code_written_in_file(char *file_name, char *code)
 {
-    Vaccinated_response file_errors;
+    File_response file_errors;
 
     /* Buffer di lettura da file */
     char *line = (char *)malloc(56 * sizeof(char));
@@ -27,7 +27,6 @@ Vaccinated_response is_code_written_in_file(char *file_name, char *code)
     {
         file_errors.result_flag = 0;
         file_errors.open_file_flag = 1;
-        file_errors.read_file_flag = 0;
         file_errors.write_file_flag = 0;
 
         fprintf(stderr, "Errore nell'apertura del file!\n");
@@ -44,7 +43,6 @@ Vaccinated_response is_code_written_in_file(char *file_name, char *code)
         {
             file_errors.result_flag = 0;
             file_errors.open_file_flag = 0;
-            file_errors.read_file_flag = 0;
             file_errors.write_file_flag = 0;
 
             /* Deallocazione della memoria */
@@ -61,7 +59,6 @@ Vaccinated_response is_code_written_in_file(char *file_name, char *code)
         {
             file_errors.result_flag = 1;
             file_errors.open_file_flag = 0;
-            file_errors.read_file_flag = 0;
             file_errors.write_file_flag = 0;
 
             /* Deallocazione della memoria */
@@ -73,7 +70,6 @@ Vaccinated_response is_code_written_in_file(char *file_name, char *code)
 
     file_errors.result_flag = 0;
     file_errors.open_file_flag = 0;
-    file_errors.read_file_flag = 0;
     file_errors.write_file_flag = 0;
 
     /* Deallocazione della memoria */
@@ -92,16 +88,15 @@ Vaccinated_response is_code_written_in_file(char *file_name, char *code)
  *
  * @return
  * */
-Vaccinated_response subscribe_vaccinated_client(char* vaccinated_client_info)
+File_response subscribe_vaccinated_client(char* vaccinated_client_info)
 {
-    Vaccinated_response file_errors;
+    File_response file_errors;
     FILE *vaccinated_file;
 
     if((vaccinated_file = fopen(VACCINATED_FILE_NAME, "a")) == NULL)
     {
         file_errors.result_flag = 0;
         file_errors.open_file_flag = 1;
-        file_errors.read_file_flag = 0;
         file_errors.write_file_flag = 0;
 
         fprintf(stderr, "Errore nell'apertura del file!\n");
@@ -112,7 +107,6 @@ Vaccinated_response subscribe_vaccinated_client(char* vaccinated_client_info)
     {
         file_errors.result_flag = 0;
         file_errors.open_file_flag = 0;
-        file_errors.read_file_flag = 0;
         file_errors.write_file_flag = 1;
 
         fprintf(stderr, "Errore in scrittura su File\n");
@@ -122,7 +116,6 @@ Vaccinated_response subscribe_vaccinated_client(char* vaccinated_client_info)
 
     file_errors.result_flag = 1;
     file_errors.open_file_flag = 0;
-    file_errors.read_file_flag = 0;
     file_errors.write_file_flag = 0;
 
     fclose(vaccinated_file);

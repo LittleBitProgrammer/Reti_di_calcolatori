@@ -27,7 +27,7 @@ int main(int argc, char **argv)
                                                                                         da parte del client */
     char*              verification_code = (char *)malloc(CL * sizeof(char));   /*  */
     Vaccinated_package vaccinated_request_package;                                   /*  */
-    Vaccinated_response     is_green_pass_obtained;                                       /*  */
+    File_response     is_green_pass_obtained;                                  /*  */
 
     /*
      * ==========================
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
     FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
 
     /*  */
-    if(FullRead(client_file_descriptor, &is_green_pass_obtained, sizeof(Vaccinated_response)) > 0)
+    if(FullRead(client_file_descriptor, &is_green_pass_obtained, sizeof(File_response)) > 0)
     {
         /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
         free(server_daytime);
