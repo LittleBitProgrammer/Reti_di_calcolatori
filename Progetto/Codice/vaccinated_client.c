@@ -128,7 +128,7 @@ int main(int argc, char **argv)
      *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
      * Per il progetto si è deciso di utilizzare una porta registrata "6463"
      * */
-     server_address.sin_port = htons(6463);
+     server_address.sin_port = htons(6462);
 
     /*
      * ==================================

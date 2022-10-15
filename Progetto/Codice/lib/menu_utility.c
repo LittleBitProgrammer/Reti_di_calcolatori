@@ -30,7 +30,7 @@ bool run_vaccinated_menu(struct tm* vaccination_date, struct tm* local_daytime, 
 
     fscanf(stdin, "%s", verification_code);
 
-    if(!insert_card_code(verification_code))
+    if(!verify_card_code(verification_code))
     {
         return FALSE;
     }
@@ -55,7 +55,7 @@ bool run_reviser_menu(char *card_code)
 
     free_input_buffer();
 
-    if(!insert_card_code(card_code))
+    if(!verify_card_code(card_code))
     {
         return FALSE;
     }

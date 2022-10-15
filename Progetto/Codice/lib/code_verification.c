@@ -11,7 +11,7 @@
  *
  * @return
  * */
-bool insert_card_code(char* code)
+bool verify_card_code(char* code)
 {
     size_t code_len = strlen(code);
 
