@@ -18,10 +18,15 @@ typedef struct
 
 typedef struct
 {
-    bool result_flag;
     bool open_file_flag;
     bool write_file_flag;
-} File_response;
+} File_flags;
+
+typedef struct
+{
+    bool result_flag;
+    File_flags file_flags;
+} File_result;
 
 typedef struct
 {
@@ -29,7 +34,7 @@ typedef struct
     struct tm expiration_date;
     struct tm last_update;
     char* motivation;
-    File_response file_flags;
+    File_flags file_flags;
 } Reviser_package;
 
 #endif //PACKAGE_UTILITY_H
