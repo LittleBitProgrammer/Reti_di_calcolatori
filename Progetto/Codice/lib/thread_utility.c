@@ -600,6 +600,8 @@ void* assistant_server_handler(void* args) {
             }
 
             close(reviser_socket);
+
+            FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
         }
     }
 }

@@ -5,6 +5,7 @@
 #include <string.h>
 #include "lib/sockets_utility.h"
 #include "lib/menu_utility.h"
+#include "lib/package_utility.h"
 
 int main(int argc, char **argv)
 {
@@ -18,6 +19,7 @@ int main(int argc, char **argv)
     struct hostent*    server_dns;
     char               command_writer_buffer[CMD_BUFFER_LEN];
     char               writer_buffer[21];
+    Reviser_package    reviser_package;
 
     /*
     * ==========================
@@ -150,8 +152,30 @@ int main(int argc, char **argv)
      * */
 
     FullWrite(client_file_descriptor, writer_buffer, 21);
+    if(FullRead(client_file_descriptor, &reviser_package, sizeof(reviser_package)) > 0)
+    {
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
 
-
+    printf("Informazioni:\n\n");
+    if(reviser_package.file_flags.open_file_flag || reviser_package.file_flags.write_file_flag)
+    {
+        fprintf(stderr,"Anomalia durante l'operazione del server\n");
+    }
+    else
+    {
+        printf("\n- Validità:\t Green pass %s\n",    reviser_package.is_green_pass_valid ? "non valido" : "valido");
+        printf("- Scadenza:\t %d/%d/%d\n",           reviser_package.expiration_date.tm_mday, 
+                                                     reviser_package.expiration_date.tm_mon + 1,
+                                                     reviser_package.expiration_date.tm_year + 1900);
+        printf("- Motivazione:\t %s\n",              reviser_package.motivation);
+        printf("- Ultimo Aggiornamento: %d/%d/%d\n", reviser_package.last_update.tm_mday, 
+                                                     reviser_package.last_update.tm_mon + 1,
+                                                     reviser_package.last_update.tm_year + 1900);
+    }
 
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);
