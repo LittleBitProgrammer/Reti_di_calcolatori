@@ -8,7 +8,7 @@
 #define VACCINATED_FILE_NAME "../file/server/vaccinated"
 #define MAX_FILE_LINE_SIZE 56
 
-Vaccinated_response is_code_written_in_file(char*, char*);
-Vaccinated_response subscribe_vaccinated_client(char*);
+File_result is_code_written_in_file(char*, char*);
+File_result subscribe_vaccinated_client(char*);
 
 #endif //FILE_UTILITY_H

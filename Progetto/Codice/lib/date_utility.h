@@ -2,7 +2,7 @@
 #define DATA_UTILITY_H
 
 #include <time.h>                /* Importata per utilizzare la struttura "@struct tm" */
-#include "lib/bool_utility.h"    /* Importata per utilizzare il tipo di dato "@bool" */
+#include "bool_utility.h"    /* Importata per utilizzare il tipo di dato "@bool" */
 
 #define MAX_YEAR 2022
 #define MIN_YEAR 2020

@@ -18,9 +18,23 @@ typedef struct
 
 typedef struct
 {
-    bool result_flag;
     bool open_file_flag;
     bool write_file_flag;
-} Vaccinated_response;
+} File_flags;
+
+typedef struct
+{
+    bool result_flag;
+    File_flags file_flags;
+} File_result;
+
+typedef struct
+{
+    bool is_green_pass_valid;
+    struct tm expiration_date;
+    struct tm last_update;
+    char motivation[13];
+    File_flags file_flags;
+} Reviser_package;
 
 #endif //PACKAGE_UTILITY_H

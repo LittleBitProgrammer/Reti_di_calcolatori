@@ -6,7 +6,7 @@
 #include "lib/thread_utility.h"
 #include "lib/sockets_utility.h"
 
-int main(int argc, char **argv)
+int main()
 {
     /* ==========================
      * =       VARIABLES        =
