@@ -75,3 +75,33 @@ void print_logo(void)
     printf("\\ `.___.'\\\\  `-'  /   \\ ' /     _| |_  _| |_.' /  _| |_| \\____| |\n");
     printf(" `.____ .' `.___.'     \\_/     |_____||______.'  |_____|\\______,' \n\n");
 }
+
+void print_reviser_result(Reviser_package* reviser_response, int divider_length)
+{
+    print_menu_divider(divider_length);
+    printf("= Validità:             %s %s\n",    "Green Pass", reviser_response->is_green_pass_valid ? "valido" : "non valido");
+    print_menu_divider(divider_length);
+    printf("= Scadenza:             %d/%d/%d\n", reviser_response->expiration_date.tm_mday,
+                                                          reviser_response->expiration_date.tm_mon + 1,
+                                                          reviser_response->expiration_date.tm_year + 1900);
+    print_menu_divider(divider_length);
+    printf("= Motivazione:          %s\n",       reviser_response->motivation);
+    print_menu_divider(divider_length);
+    printf("= Ultimo Aggiornamento: %d/%d/%d\n", reviser_response->last_update.tm_mday,
+                                                          reviser_response->last_update.tm_mon + 1,
+                                                          reviser_response->last_update.tm_year + 1900);
+    print_menu_divider(divider_length);
+    printf("\n");
+}
+
+void print_menu_divider(int divider_length)
+{
+    int i;
+
+    for(i = 0; i < divider_length; i++)
+    {
+        printf("=");
+    }
+
+    printf("\n");
+}
