@@ -5,8 +5,8 @@ build: build_central_server \
 		build_assistant_server \
 		build_vaccinated_server \
 		build_vaccinated_client \
-		build_reviser_client \
-		build_administrator_client
+		build_administrator_client \
+		build_reviser_client
 
 # Build server Centrale
 build_central_server:
@@ -17,7 +17,7 @@ build_central_server:
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
-		-o output/server_centrale
+		-o ./output/server_centrale
 
 # Build server assistente
 build_assistant_server:
@@ -28,7 +28,7 @@ build_assistant_server:
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
-		-o output/server_assistente
+		-o ./output/server_assistente
 
 # Build server centro vaccinale
 build_vaccinated_server:
@@ -39,7 +39,7 @@ build_vaccinated_server:
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
-		-o output/centro_vaccinale
+		-o ./output/centro_vaccinale
 
 # Build client vaccinale
 build_vaccinated_client:
@@ -53,7 +53,7 @@ build_vaccinated_client:
 		lib/file_utility.c \
 		lib/buffer_utility.c \
 		lib/package_utility.c \
-		-o output/client_vaccinale
+		-o ./output/client_vaccinale
 		
 
 # Build client revisore
@@ -68,7 +68,7 @@ build_reviser_client:
 		lib/file_utility.c \
 		lib/buffer_utility.c \
 		lib/package_utility.c \
-		-o output/client_reviser
+		-o ./output/client_reviser
 
 # Build client amministratore
 build_administrator_client:
@@ -78,27 +78,33 @@ build_administrator_client:
 
 # Run del server centrale
 run_central_server:
-	sudo ./output/server_centrale
+	cd ./output &&\
+		sudo ./server_centrale
 
 # Run del server assisgente
 run_assistant_server:
-	sudo ./output/server_assistente
+	cd ./output &&\
+		sudo ./server_assistente
 
 # Run del server vaccinale
 run_vaccinated_server:
-	sudo ./output/centro_vaccinale
+	cd ./output &&\
+		sudo ./centro_vaccinale
 
 # Run del client vaccinale
 run_vaccinated_client:
-	./output/client_vaccinale localhost
+	cd ./output &&\
+		./client_vaccinale localhost
 
 # Run del client revisore
 run_reviser_client:
-	./output/client_reviser localhost
+	cd ./output && x-terminal-emulator &&\
+		./client_reviser localhost
 
 # Run del client amministratore
 run_administrator_client:
-	./output/client_administrator localhost
+	cd ./output &&\
+		./client_administrator localhost
 
 clean:
 	rm output/*
