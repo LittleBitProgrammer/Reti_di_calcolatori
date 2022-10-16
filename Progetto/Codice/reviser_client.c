@@ -169,12 +169,12 @@ int main(int argc, char **argv)
     {
         printf("\n- Validità:\t Green pass %s\n",    reviser_package.is_green_pass_valid ? "non valido" : "valido");
         printf("- Scadenza:\t %d/%d/%d\n",           reviser_package.expiration_date.tm_mday, 
-                                                     reviser_package.expiration_date.tm_mon + 1,
-                                                     reviser_package.expiration_date.tm_year + 1900);
+                                                            reviser_package.expiration_date.tm_mon + 1,
+                                                            reviser_package.expiration_date.tm_year + 1900);
         printf("- Motivazione:\t %s\n",              reviser_package.motivation);
         printf("- Ultimo Aggiornamento: %d/%d/%d\n", reviser_package.last_update.tm_mday, 
-                                                     reviser_package.last_update.tm_mon + 1,
-                                                     reviser_package.last_update.tm_year + 1900);
+                                                            reviser_package.last_update.tm_mon + 1,
+                                                            reviser_package.last_update.tm_year + 1900);
     }
 
     /* Chiusura del socket file descriptor connesso al server */
