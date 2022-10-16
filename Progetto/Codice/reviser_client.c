@@ -160,21 +160,26 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    printf("Informazioni:\n\n");
+    printf("\nInformazioni:\n\n");
     if(reviser_package.file_flags.open_file_flag || reviser_package.file_flags.write_file_flag)
     {
         fprintf(stderr,"Anomalia durante l'operazione del server\n");
     }
     else
     {
-        printf("\n- Validità:\t Green pass %s\n",    reviser_package.is_green_pass_valid ? "non valido" : "valido");
-        printf("- Scadenza:\t %d/%d/%d\n",           reviser_package.expiration_date.tm_mday, 
-                                                            reviser_package.expiration_date.tm_mon + 1,
-                                                            reviser_package.expiration_date.tm_year + 1900);
-        printf("- Motivazione:\t %s\n",              reviser_package.motivation);
-        printf("- Ultimo Aggiornamento: %d/%d/%d\n", reviser_package.last_update.tm_mday, 
-                                                            reviser_package.last_update.tm_mon + 1,
-                                                            reviser_package.last_update.tm_year + 1900);
+        printf("===============================================");
+        printf("\n= Validità:\t\t\t\t%s %s\n",    "Green Pass", reviser_package.is_green_pass_valid ? "valido" : "non valido");
+        printf("===============================================");
+        printf("\n= Scadenza:\t\t\t\t%d/%d/%d\n",           reviser_package.expiration_date.tm_mday,
+               reviser_package.expiration_date.tm_mon + 1,
+               reviser_package.expiration_date.tm_year + 1900);
+        printf("===============================================");
+        printf("\n= Motivazione:\t\t\t%s\n",              reviser_package.motivation);
+        printf("===============================================");
+        printf("\n= Ultimo Aggiornamento: %d/%d/%d\n", reviser_package.last_update.tm_mday,
+               reviser_package.last_update.tm_mon + 1,
+               reviser_package.last_update.tm_year + 1900);
+        printf("===============================================\n");
     }
 
     /* Chiusura del socket file descriptor connesso al server */
