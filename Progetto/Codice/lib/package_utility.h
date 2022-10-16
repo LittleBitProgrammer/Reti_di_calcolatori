@@ -38,4 +38,11 @@ typedef struct
     File_flags file_flags;
 } Reviser_package;
 
+typedef struct
+{
+    int index_list;
+    char motivation[13];
+} Administrator_package;
+//TODO: Fare REFACTOR per gestire l'errore di apertura file durante l'operazione di lettura e popolazione della lista di codici
+
 #endif //PACKAGE_UTILITY_H

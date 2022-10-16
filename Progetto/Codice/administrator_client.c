@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <string.h>
 #include "lib/sockets_utility.h"
+#include "lib/menu_utility.h"
 
 
 int main(int argc, char **argv)
@@ -15,6 +17,10 @@ int main(int argc, char **argv)
     int client_file_descriptor;
     struct sockaddr_in server_address;
     struct hostent* server_dns;
+    char command_writer_buffer[CMD_BUFFER_LEN];
+    Administrator_package administrator_package;
+    char* code_list;
+    int size_list;
 
     /*
     * ==========================
@@ -114,13 +120,6 @@ int main(int argc, char **argv)
     server_address.sin_port = htons(6465);
 
     /*
-     * ====================
-     * =       MENU       =
-     * ====================
-     * */
-
-
-    /*
      * ==================================
      * =           CONNECTION           =
      * ==================================
@@ -129,7 +128,41 @@ int main(int argc, char **argv)
     /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
     ConnectIPV4(client_file_descriptor, &server_address);
 
+    strcpy(command_writer_buffer, "CMD_LST");
 
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+
+    if(FullRead(client_file_descriptor, &size_list, sizeof(int)) > 0)
+    {
+        fprintf(stderr,"Errore di lettura\n");
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    if(FullRead(client_file_descriptor, code_list, size_list * 21) > 0)
+    {
+        fprintf(stderr,"Errore di lettura\n");
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * ====================
+     * =       MENU       =
+     * ====================
+     * */
+
+    if(!run_administrator_menu(&administrator_package, code_list, size_list))
+    {
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_SUCCESS);
+    }
 
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);

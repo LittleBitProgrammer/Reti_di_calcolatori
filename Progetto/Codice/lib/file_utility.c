@@ -122,3 +122,48 @@ File_result subscribe_vaccinated_client(char* vaccinated_client_info)
     return file_errors;
 }
 
+int count_file_lines(char* file_name, char** list_codes)
+{
+    FILE* file_point;
+    int line_counter;
+    int read_character;
+    char buffer[21];
+    int counter = 0;
+
+    if((file_point = fopen(file_name, "r")) == NULL)
+    {
+        fprintf(stderr, "Errore in apertura del file");
+        return -1;
+    }
+
+    while((read_character = fgetc(file_point)) != EOF)
+    {
+        if(read_character == '\n')
+        {
+            line_counter++;
+        }
+    }
+
+    if(line_counter != 0)
+    {
+        *list_codes = (char*)malloc(line_counter * 21);
+        line_counter = 0;
+
+        fseek(file_point, 0, SEEK_SET);
+        while(fscanf(file_point, "%s", buffer) != EOF)
+        {
+            if(counter % 4 == 0)
+            {
+                //list_codes[line_counter] = (char*)malloc(21);
+                strcpy((*list_codes + (line_counter * 21)), buffer);
+                line_counter++;
+            }
+
+            counter++;
+        }
+    }
+
+    fclose(file_point);
+    return line_counter;
+}
+

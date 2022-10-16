@@ -13,6 +13,5 @@ typedef struct
 void* vaccination_center_handler(void*);
 void* central_server_handler(void*);
 void* assistant_server_handler(void*);
-void* administrator_client_handler(void*);
 
 #endif // THREAD_UTILITY_H

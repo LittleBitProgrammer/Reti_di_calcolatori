@@ -10,5 +10,6 @@
 
 File_result is_code_written_in_file(char*, char*);
 File_result subscribe_vaccinated_client(char*);
+int count_file_lines(char*, char**);
 
 #endif //FILE_UTILITY_H

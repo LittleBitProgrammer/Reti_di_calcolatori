@@ -63,23 +63,22 @@ bool run_reviser_menu(char *card_code)
     return TRUE;
 }
 
-bool run_administrator_menu(char* card_code, char* motivation)
+bool run_administrator_menu(Administrator_package* administrator_package, char* code_list, int code_size_list)
 {
     print_logo();
     printf("Benvenuti sulla piattaforma Green Pass.\n\n");
+
+    if(!code_size_list)
+    {
+        printf("Non ci sono elementi da aggiornare\n");
+        return FALSE;
+    }
     printf("Inserire codice tessera sanitaria (controllare il punto '8' sul retro della tessera)"
                   "di cui si vuole aggiornare lo stato: ");
 
-    fscanf(stdin,"%s", card_code);
+    //fscanf(stdin,"%s", line_index);
 
     free_input_buffer();
-
-    if(!verify_card_code(card_code))
-    {
-        return FALSE;
-    }
-
-
 
     return TRUE;
 }
