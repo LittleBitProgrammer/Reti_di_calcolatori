@@ -114,6 +114,13 @@ int main(int argc, char **argv)
     server_address.sin_port = htons(6465);
 
     /*
+     * ====================
+     * =       MENU       =
+     * ====================
+     * */
+
+
+    /*
      * ==================================
      * =           CONNECTION           =
      * ==================================
@@ -121,6 +128,7 @@ int main(int argc, char **argv)
 
     /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
     ConnectIPV4(client_file_descriptor, &server_address);
+
 
 
     /* Chiusura del socket file descriptor connesso al server */

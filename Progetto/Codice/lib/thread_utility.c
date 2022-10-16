@@ -420,15 +420,23 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            if(generate_reviser_response(&reviser_package, reader_buffer) != NULL)
+            if(is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer).result_flag)
             {
-                /* Chiusura del socket file descriptor connesso al client */
-                close(connection_file_descriptor);
-                /*
-                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
-                 * reperire l'informazione relativa al prossimo thread disponibile
-                 * */
-                pthread_exit(NULL);
+                if(generate_reviser_response(&reviser_package, reader_buffer) != NULL)
+                {
+                    /* Chiusura del socket file descriptor connesso al client */
+                    close(connection_file_descriptor);
+                    /*
+                     * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                     * reperire l'informazione relativa al prossimo thread disponibile
+                     * */
+                    pthread_exit(NULL);
+                }
+            }
+            else
+            {
+                bzero(&reviser_package, sizeof(reviser_package));
+                reviser_package.file_flags.read_file_flag = TRUE;
             }
 
             FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
@@ -604,5 +612,10 @@ void* assistant_server_handler(void* args) {
             FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
         }
     }
+}
+
+void* administrator_client_handler(void* args)
+{
+
 }
 

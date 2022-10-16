@@ -63,6 +63,28 @@ bool run_reviser_menu(char *card_code)
     return TRUE;
 }
 
+bool run_administrator_menu(char* card_code, char* motivation)
+{
+    print_logo();
+    printf("Benvenuti sulla piattaforma Green Pass.\n\n");
+    printf("Inserire codice tessera sanitaria (controllare il punto '8' sul retro della tessera)"
+                  "di cui si vuole aggiornare lo stato: ");
+
+    fscanf(stdin,"%s", card_code);
+
+    free_input_buffer();
+
+    if(!verify_card_code(card_code))
+    {
+        return FALSE;
+    }
+
+
+
+    return TRUE;
+}
+
+
 /**
  * @brief
  * */

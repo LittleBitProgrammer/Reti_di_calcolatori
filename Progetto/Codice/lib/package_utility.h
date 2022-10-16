@@ -20,6 +20,7 @@ typedef struct
 {
     bool open_file_flag;
     bool write_file_flag;
+    bool read_file_flag;
 } File_flags;
 
 typedef struct
