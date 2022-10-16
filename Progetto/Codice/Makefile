@@ -98,7 +98,7 @@ run_vaccinated_client:
 
 # Run del client revisore
 run_reviser_client:
-	cd ./output && x-terminal-emulator &&\
+	cd ./output &&\
 		./client_reviser localhost
 
 # Run del client amministratore
