@@ -46,6 +46,7 @@ typedef struct
 
 typedef struct
 {
+    bool not_updatable;
     char code[21];
     Reviser_package reviser_package;
 } Administrator_response_package;

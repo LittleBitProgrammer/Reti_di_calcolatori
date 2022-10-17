@@ -495,7 +495,7 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            printf("ciao");
+
         }
     }
 }

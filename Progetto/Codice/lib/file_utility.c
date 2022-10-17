@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "file_utility.h"
+#include "date_utility.h"
+#include "green_pass_utility.h"
 
 /**
  * @brief
@@ -204,9 +206,24 @@ bool change_information_in_file(Administrator_request_package* administrator_pac
     // Store the position
     position_cursor = ftell(file_point);
 
-    fscanf(file_point, "%s %d/%d/%d", administrator_response->code, &(administrator_response->reviser_package.expiration_date.tm_mday),
+    fscanf(file_point, "%s %d/%d/%d %s", administrator_response->code, &(administrator_response->reviser_package.expiration_date.tm_mday),
                                                        &(administrator_response->reviser_package.expiration_date.tm_mon),
-                                                       &(administrator_response->reviser_package.expiration_date.tm_year));
+                                                       &(administrator_response->reviser_package.expiration_date.tm_year),
+                                                       administrator_response->reviser_package.motivation);
+
+    if((strcmp(administrator_response->reviser_package.motivation, "Covid") && !strcmp(administrator_package->motivation, "Guarigione")) || !strcmp(administrator_response->reviser_package.motivation, administrator_package->motivation))
+    {
+        administrator_response->not_updatable = 1;
+
+        fclose(file_point);
+        return FALSE;
+    }
+
+    if(!strcmp(administrator_package->motivation, "Guarigione"))
+    {
+        administrator_response->reviser_package.expiration_date = add_month_to_date(*local_time, EXPIRATION_DURATION_MONTH);
+    }
+
 
     //Costruzione della stringa da inserire
     snprintf(overwrite_string, MAX_FILE_LINE_SIZE - 1, "%s %d/%d/%d %s %d/%d/%d", administrator_response->code,
@@ -222,6 +239,8 @@ bool change_information_in_file(Administrator_request_package* administrator_pac
 
     //stampo la nuova stringa
     fprintf(file_point, "%s\n", overwrite_string);
+
+    administrator_response->not_updatable = 0;
 
     fclose(file_point);
     return TRUE;
