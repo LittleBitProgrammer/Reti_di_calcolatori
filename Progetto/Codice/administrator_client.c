@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     Administrator_request_package administrator_package;
     char* code_list;
     int size_list;
-    Reviser_package reviser_package;
+    Administrator_response_package administrator_response_package;
 
     /*
     * ==========================
@@ -174,7 +174,29 @@ int main(int argc, char **argv)
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
     FullWrite(client_file_descriptor, &administrator_package, sizeof(administrator_package));
 
-    FullRead(client_file_descriptor, &reviser_package, sizeof(reviser_package));
+    if(FullRead(client_file_descriptor, &administrator_response_package, sizeof(administrator_response_package)) > 0)
+    {
+        fprintf(stderr,"Errore di lettura\n");
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    if(administrator_response_package.reviser_package.file_flags.read_file_flag || administrator_response_package.reviser_package.file_flags.open_file_flag || administrator_response_package.reviser_package.file_flags.write_file_flag)
+    {
+        fprintf(stderr,"Anomalia durante l'operazione del server\n");
+    }
+    else if(administrator_response_package.not_updatable)
+    {
+        fprintf(stderr,"Impossibile aggiornare l'utente selezionato con i campi scelti\n");
+    }
+    else
+    {
+        printf("Le informazioni sono state aggiornate come segue:\n");
+        print_user_information(&administrator_response_package.reviser_package, 45);
+    }
+
 
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);

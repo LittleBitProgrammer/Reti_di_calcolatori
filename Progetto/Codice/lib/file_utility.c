@@ -169,7 +169,7 @@ int count_file_lines(char* file_name, char** list_codes)
     return line_counter;
 }
 
-bool change_information_in_file(Administrator_request_package* administrator_package, Administrator_response_package* administrator_response, char* file_name)
+bool change_information_in_file(Administrator_request_package* update_package, Administrator_response_package* administrator_response, char* file_name)
 {
     FILE* file_point;
     int count_lines = 0;
@@ -195,7 +195,7 @@ bool change_information_in_file(Administrator_request_package* administrator_pac
         memset(overwrite_string, 32, MAX_FILE_LINE_SIZE - 1);
     }
 
-    while(count_lines != administrator_package->index_list)
+    while(count_lines != update_package->index_list)
     {
         if((fgetc(file_point)) == '\n')
         {
@@ -211,27 +211,44 @@ bool change_information_in_file(Administrator_request_package* administrator_pac
                                                        &(administrator_response->reviser_package.expiration_date.tm_year),
                                                        administrator_response->reviser_package.motivation);
 
-    if((strcmp(administrator_response->reviser_package.motivation, "Covid") && !strcmp(administrator_package->motivation, "Guarigione")) || !strcmp(administrator_response->reviser_package.motivation, administrator_package->motivation))
+    if((strcmp(administrator_response->reviser_package.motivation, "Covid") && !strcmp(update_package->motivation, "Guarigione")) || !strcmp(administrator_response->reviser_package.motivation, update_package->motivation))
     {
         administrator_response->not_updatable = 1;
 
         fclose(file_point);
-        return FALSE;
+        return TRUE;
     }
 
-    if(!strcmp(administrator_package->motivation, "Guarigione"))
+    if(!strcmp(update_package->motivation, "Guarigione"))
     {
         administrator_response->reviser_package.expiration_date = add_month_to_date(*local_time, EXPIRATION_DURATION_MONTH);
     }
+    else
+    {
+        administrator_response->reviser_package.expiration_date.tm_mon -= 1;
+        administrator_response->reviser_package.expiration_date.tm_year -= 1900;
+    }
+
+    bzero(administrator_response->reviser_package.motivation, sizeof(administrator_response->reviser_package.motivation));
+    strcpy(administrator_response->reviser_package.motivation,update_package->motivation);
+    administrator_response->reviser_package.last_update.tm_mday = local_time->tm_mday;
+    administrator_response->reviser_package.last_update.tm_mon = local_time->tm_mon;
+    administrator_response->reviser_package.last_update.tm_year = local_time->tm_year;
+    administrator_response->reviser_package.is_green_pass_valid = check_green_pass_validity(&(administrator_response->reviser_package.expiration_date),
+                                                                                            &(administrator_response->reviser_package.last_update),
+                                                                                            administrator_response->reviser_package.motivation);
 
 
     //Costruzione della stringa da inserire
     snprintf(overwrite_string, MAX_FILE_LINE_SIZE - 1, "%s %d/%d/%d %s %d/%d/%d", administrator_response->code,
                                                                                                    administrator_response->reviser_package.expiration_date.tm_mday,
-                                                                                                   administrator_response->reviser_package.expiration_date.tm_mon,
-                                                                                                   administrator_response->reviser_package.expiration_date.tm_year,
-                                                                                                   administrator_package->motivation,
-                                                                                                   local_time->tm_mday, local_time->tm_mon + 1, local_time->tm_year + 1900);
+                                                                                                   administrator_response->reviser_package.expiration_date.tm_mon + 1,
+                                                                                                   administrator_response->reviser_package.expiration_date.tm_year + 1900,
+                                                                                                   administrator_response->reviser_package.motivation,
+                                                                                                   administrator_response->reviser_package.last_update.tm_mday,
+                                                                                                   administrator_response->reviser_package.last_update.tm_mon + 1,
+                                                                                                   administrator_response->reviser_package.last_update.tm_year + 1900);
+
     overwrite_string[strlen(overwrite_string)] = 32;
 
     // Or fseek(file,ftell(file),SEEK_SET);

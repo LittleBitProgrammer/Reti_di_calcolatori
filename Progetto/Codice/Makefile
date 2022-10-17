@@ -68,6 +68,7 @@ build_reviser_client:
 		lib/file_utility.c \
 		lib/buffer_utility.c \
 		lib/package_utility.c \
+		lib/green_pass_utility.c \
 		-o ./output/client_reviser
 
 # Build client amministratore
@@ -82,6 +83,7 @@ build_administrator_client:
 		lib/file_utility.c \
 		lib/buffer_utility.c \
 		lib/package_utility.c \
+		lib/green_pass_utility.c \
 		-o output/client_administrator
 
 # Run del server centrale

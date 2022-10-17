@@ -495,7 +495,7 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
-
+            FullWrite(connection_file_descriptor, &administrator_response_package, sizeof(administrator_response_package));
         }
     }
 }
@@ -808,6 +808,7 @@ void* assistant_server_handler(void* args)
             struct sockaddr_in central_server_address;
             const char central_server_ip[] = "127.0.0.1";
             Administrator_request_package update_information_package;
+            Administrator_response_package response_from_server;
 
             if(FullRead(connection_file_descriptor, &update_information_package, sizeof(update_information_package)) > 0)
             {
@@ -894,6 +895,30 @@ void* assistant_server_handler(void* args)
 
             FullWrite(administrator_socket, command_reader_buffer, CMD_BUFFER_LEN);
             FullWrite(administrator_socket, &update_information_package, sizeof(update_information_package));
+
+            if(FullRead(administrator_socket, &response_from_server, sizeof(response_from_server)) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Server disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(administrator_socket);
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            FullWrite(connection_file_descriptor, &response_from_server, sizeof(response_from_server));
+
+            close(administrator_socket);
         }
     }
 }
