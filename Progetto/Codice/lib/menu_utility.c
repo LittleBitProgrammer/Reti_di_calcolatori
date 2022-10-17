@@ -63,6 +63,48 @@ bool run_reviser_menu(char *card_code)
     return TRUE;
 }
 
+bool run_administrator_menu(Administrator_request_package* administrator_package, char* code_list, int code_size_list)
+{
+    int index_motivation_choice;
+
+    print_logo();
+    printf("Benvenuti sulla piattaforma Green Pass.\n\n");
+
+    if(!code_size_list)
+    {
+        printf("Non ci sono elementi da aggiornare\n");
+        return FALSE;
+    }
+
+    print_code_list(code_list, code_size_list);
+
+    printf("Scegliere uno dei seguenti codici tessera sanitaria: ");
+
+    fscanf(stdin,"%d", &(administrator_package->index_list));
+
+    administrator_package->index_list -= 1;
+
+    free_input_buffer();
+
+    printf("Scegliere il codice della motivazione:\n");
+    printf("1. Guarigione\n");
+    printf("2. Covid\n");
+    printf("> ");
+
+    fscanf(stdin, "%d", &index_motivation_choice);
+
+    if(index_motivation_choice < 1 || index_motivation_choice > 2)
+    {
+        fprintf(stderr, "Scelta selezionata errata");
+        return FALSE;
+    }
+
+    strcpy(administrator_package->motivation, (index_motivation_choice == 1) ? "Guarigione" : "Covid");
+
+    return TRUE;
+}
+
+
 /**
  * @brief
  * */
@@ -76,14 +118,19 @@ void print_logo(void)
     printf(" `.____ .' `.___.'     \\_/     |_____||______.'  |_____|\\______,' \n\n");
 }
 
-void print_reviser_result(Reviser_package* reviser_response, int divider_length)
+void print_user_information(Reviser_package* reviser_response, int divider_length)
 {
+    char expiration_date[11];
+
     print_menu_divider(divider_length);
     printf("= Validità:             %s %s\n",    "Green Pass", reviser_response->is_green_pass_valid ? "valido" : "non valido");
     print_menu_divider(divider_length);
-    printf("= Scadenza:             %d/%d/%d\n", reviser_response->expiration_date.tm_mday,
-                                                          reviser_response->expiration_date.tm_mon + 1,
-                                                          reviser_response->expiration_date.tm_year + 1900);
+
+    snprintf(expiration_date, 11, "%d/%d/%d", reviser_response->expiration_date.tm_mday,
+                                                               reviser_response->expiration_date.tm_mon + 1,
+                                                               reviser_response->expiration_date.tm_year + 1900);
+
+    printf("= Scadenza:             %s\n", reviser_response->is_green_pass_valid ?  expiration_date : "-/-/-");
     print_menu_divider(divider_length);
     printf("= Motivazione:          %s\n",       reviser_response->motivation);
     print_menu_divider(divider_length);
@@ -102,6 +149,22 @@ void print_menu_divider(int divider_length)
     {
         printf("=");
     }
+
+    printf("\n");
+}
+
+void print_code_list(char* code_list, int size)
+{
+    int i;
+
+    print_menu_divider(45);
+    printf("Indice    Codici Tessera Sanitaria\n");
+    print_menu_divider(45);
+    for(i = 0; i < size; i++)
+    {
+        printf("%2d.       %s\n", i + 1, code_list + i * 21);
+    }
+    print_menu_divider(45);
 
     printf("\n");
 }

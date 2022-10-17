@@ -1,4 +1,5 @@
 #include <stdio.h>              /* Importata per utilizzare la funzione "@snprintf()" */
+#include <stdlib.h>
 #include <string.h>             /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
 #include <time.h>               /* Importata per utilizzare la funzione "@time()" */
 #include <unistd.h>             /* Importata per utilizzare la funzione "@close() */
@@ -262,13 +263,14 @@ void* vaccination_center_handler(void* args)
                 FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(File_result));
             }
         }
-
-        //TODO: caso default
     }
 }
 
 void* central_server_handler(void* args)
 {
+    /* Rende STDOUT non bufferizzato */
+    (void)setvbuf(stdout, NULL, _IONBF, 0);
+
     int  connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
     char command_reader_buffer[CMD_BUFFER_LEN];
     char reader_buffer[21];
@@ -420,8 +422,53 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            if(generate_reviser_response(&reviser_package, reader_buffer) != NULL)
+            if(is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer).result_flag)
             {
+                if(generate_reviser_response(&reviser_package, reader_buffer) != NULL)
+                {
+                    /* Chiusura del socket file descriptor connesso al client */
+                    close(connection_file_descriptor);
+                    /*
+                     * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                     * reperire l'informazione relativa al prossimo thread disponibile
+                     * */
+                    pthread_exit(NULL);
+                }
+            }
+            else
+            {
+                bzero(&reviser_package, sizeof(reviser_package));
+                reviser_package.file_flags.read_file_flag = TRUE;
+            }
+
+            FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
+        }
+        else if(!strcmp(command_reader_buffer, "CMD_LST"))
+        {
+            char* vaccinated_array_list;
+            //TODO: Gestirsi l'errore di apertura
+            int size_vaccinated_list = count_file_lines(VACCINATED_FILE_NAME, &vaccinated_array_list);
+
+            FullWrite(connection_file_descriptor, &size_vaccinated_list, sizeof(int));
+            FullWrite(connection_file_descriptor, vaccinated_array_list, size_vaccinated_list * 21);
+
+            free(vaccinated_array_list);
+        }
+        else if(!strcmp(command_reader_buffer, "CMD_MOD"))
+        {
+            Administrator_request_package update_information_package;
+            Administrator_response_package administrator_response_package;
+
+            if(FullRead(connection_file_descriptor, &update_information_package, sizeof(update_information_package)) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Server assistente disconnesso\n");
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
                 /*
@@ -431,12 +478,30 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
+            if(!change_information_in_file(&update_information_package, &administrator_response_package, VACCINATED_FILE_NAME))
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            FullWrite(connection_file_descriptor, &administrator_response_package, sizeof(administrator_response_package));
         }
     }
 }
 
-void* assistant_server_handler(void* args) {
+void* assistant_server_handler(void* args)
+{
     /* ==========================
      * =       Variables        =
      * ==========================
@@ -484,7 +549,8 @@ void* assistant_server_handler(void* args) {
          * ================================
          * */
         if (!strcmp(command_reader_buffer, "CMD_REV")) {
-            if (FullRead(connection_file_descriptor, code_reader_buffer, 21) > 0) {
+            if (FullRead(connection_file_descriptor, code_reader_buffer, 21) > 0)
+            {
                 /*
                  * ==================================
                  * =         CLOSE  THREAD          =
@@ -602,6 +668,257 @@ void* assistant_server_handler(void* args) {
             close(reviser_socket);
 
             FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
+        }
+        else if(!strcmp(command_reader_buffer, "CMD_LST"))
+        {
+            /*
+             * =========================
+             * =       VARIABLES       =
+             * =========================
+             * */
+            int administrator_socket;
+            struct sockaddr_in central_server_address;
+            const char central_server_ip[] = "127.0.0.1";
+            int size_codes_list;
+            char* codes_list;
+
+
+            /* ==========================
+             * =    SOCKET CREATION     =
+             * ==========================
+             * */
+
+            administrator_socket = SocketIPV4();
+
+            /*
+             * ==================================
+             * =        SERVER CREATION         =
+             * ==================================
+             * */
+
+            /*
+             * Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale da costruire un Endpoint identificabile sulla rete.
+             * La struttura "@sockaddr_in" è composta dai seguenti campi:
+             *      @sin_family:      Famiglia degli indirizzi utilizzati (AF_INET - AF_INET6 - ecc...)
+             *      @sin_port:        Porta in Network order
+             *      @sin_addr.s_addr: Indirizzo IP in Network order
+             * */
+
+            /*
+             * Inizializziamo il campo famiglia della struttura "@sockaddr_in" del server con il valore "@AF_INET". In questo modo, specifichiamo
+             * che il nostro server utilizzerà un indirizzo del tipo IPv4
+             * */
+            central_server_address.sin_family = AF_INET;
+
+            /*
+             *
+             * */
+            if(inet_pton(AF_INET, central_server_ip, &central_server_address.sin_addr) <= 0)
+            {
+                /*  */
+                fprintf(stderr, "inet_pton() error for %s\n", central_server_ip);
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                close(administrator_socket);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            /*
+             * Inizializziamo il campo porta della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
+             * "@htons()" la quale accetterà come argomento un intero rappresentante la porta desiderata su cui il server deve rimanere
+             * in ascolto. Le porte sono interi a 16 bit da 0 a 65535, raggruppate nel seguente modo:
+             *      - da 0 a 1023, porte riservate ai processi root;
+             *      - da 1024 a 49151, porte registrate;
+             *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
+             * Per il progetto si è deciso di utilizzare una porta registrata "6464"
+             * */
+            central_server_address.sin_port = htons(6464);
+
+            /*
+             * ==================================
+             * =           CONNECTION           =
+             * ==================================
+             * */
+
+            /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
+            ConnectIPV4(administrator_socket, &central_server_address);
+
+            FullWrite(administrator_socket, command_reader_buffer, CMD_BUFFER_LEN);
+
+            if(FullRead(administrator_socket, &size_codes_list, sizeof(int)) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Server disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(administrator_socket);
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            codes_list = (char*)malloc(size_codes_list * 21);
+
+            if(FullRead(administrator_socket, codes_list, size_codes_list * 21) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Server disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(administrator_socket);
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            close(administrator_socket);
+
+            FullWrite(connection_file_descriptor, &size_codes_list, sizeof(int));
+            FullWrite(connection_file_descriptor, codes_list, size_codes_list * 21);
+
+            printf("ciao");
+        }
+        else if(!strcmp(command_reader_buffer, "CMD_MOD"))
+        {
+            /*
+             * =========================
+             * =       VARIABLES       =
+             * =========================
+             * */
+            int administrator_socket;
+            struct sockaddr_in central_server_address;
+            const char central_server_ip[] = "127.0.0.1";
+            Administrator_request_package update_information_package;
+            Administrator_response_package response_from_server;
+
+            if(FullRead(connection_file_descriptor, &update_information_package, sizeof(update_information_package)) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Client disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            /* ==========================
+             * =    SOCKET CREATION     =
+             * ==========================
+             * */
+
+            administrator_socket = SocketIPV4();
+
+            /*
+             * ==================================
+             * =        SERVER CREATION         =
+             * ==================================
+             * */
+
+            /*
+             * Inizializziamo i campi della struttura "@sockaddr_in" del server in modo tale da costruire un Endpoint identificabile sulla rete.
+             * La struttura "@sockaddr_in" è composta dai seguenti campi:
+             *      @sin_family:      Famiglia degli indirizzi utilizzati (AF_INET - AF_INET6 - ecc...)
+             *      @sin_port:        Porta in Network order
+             *      @sin_addr.s_addr: Indirizzo IP in Network order
+             * */
+
+            /*
+             * Inizializziamo il campo famiglia della struttura "@sockaddr_in" del server con il valore "@AF_INET". In questo modo, specifichiamo
+             * che il nostro server utilizzerà un indirizzo del tipo IPv4
+             * */
+            central_server_address.sin_family = AF_INET;
+
+            /*
+             *
+             * */
+            if(inet_pton(AF_INET, central_server_ip, &central_server_address.sin_addr) <= 0)
+            {
+                /*  */
+                fprintf(stderr, "inet_pton() error for %s\n", central_server_ip);
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                close(administrator_socket);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            /*
+             * Inizializziamo il campo porta della struttura "@sockaddr_in" del server attraverso il valore di ritorno della funzione
+             * "@htons()" la quale accetterà come argomento un intero rappresentante la porta desiderata su cui il server deve rimanere
+             * in ascolto. Le porte sono interi a 16 bit da 0 a 65535, raggruppate nel seguente modo:
+             *      - da 0 a 1023, porte riservate ai processi root;
+             *      - da 1024 a 49151, porte registrate;
+             *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
+             * Per il progetto si è deciso di utilizzare una porta registrata "6464"
+             * */
+            central_server_address.sin_port = htons(6464);
+
+            /*
+             * ==================================
+             * =           CONNECTION           =
+             * ==================================
+             * */
+
+            /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
+            ConnectIPV4(administrator_socket, &central_server_address);
+
+            FullWrite(administrator_socket, command_reader_buffer, CMD_BUFFER_LEN);
+            FullWrite(administrator_socket, &update_information_package, sizeof(update_information_package));
+
+            if(FullRead(administrator_socket, &response_from_server, sizeof(response_from_server)) > 0)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Caso in cui il client si sia disconnesso */
+                fprintf(stderr, "Server disconnesso\n");
+                /* Chiusura del socket file descriptor connesso al client */
+                close(administrator_socket);
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            FullWrite(connection_file_descriptor, &response_from_server, sizeof(response_from_server));
+
+            close(administrator_socket);
         }
     }
 }

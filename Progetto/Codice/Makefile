@@ -53,6 +53,7 @@ build_vaccinated_client:
 		lib/file_utility.c \
 		lib/buffer_utility.c \
 		lib/package_utility.c \
+		lib/green_pass_utility.c \
 		-o ./output/client_vaccinale
 		
 
@@ -68,12 +69,22 @@ build_reviser_client:
 		lib/file_utility.c \
 		lib/buffer_utility.c \
 		lib/package_utility.c \
+		lib/green_pass_utility.c \
 		-o ./output/client_reviser
 
 # Build client amministratore
 build_administrator_client:
 	gcc administrator_client.c \
 		lib/sockets_utility.c \
+		lib/menu_utility.c \
+		lib/date_utility.c \
+		lib/bool_utility.c \
+		lib/code_verification.c \
+		lib/digits_utility.c \
+		lib/file_utility.c \
+		lib/buffer_utility.c \
+		lib/package_utility.c \
+		lib/green_pass_utility.c \
 		-o output/client_administrator
 
 # Run del server centrale

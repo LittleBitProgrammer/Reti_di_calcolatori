@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <string.h>
 #include "lib/sockets_utility.h"
+#include "lib/menu_utility.h"
 
 
 int main(int argc, char **argv)
@@ -15,6 +17,11 @@ int main(int argc, char **argv)
     int client_file_descriptor;
     struct sockaddr_in server_address;
     struct hostent* server_dns;
+    char command_writer_buffer[CMD_BUFFER_LEN];
+    Administrator_request_package administrator_package;
+    char* code_list;
+    int size_list;
+    Administrator_response_package administrator_response_package;
 
     /*
     * ==========================
@@ -121,6 +128,74 @@ int main(int argc, char **argv)
 
     /* Eseguiamo una richiesta di Three way Handshake alla struttura "@sockaddr_in" del server precedentemente generata */
     ConnectIPV4(client_file_descriptor, &server_address);
+
+    strcpy(command_writer_buffer, "CMD_LST");
+
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+
+    if(FullRead(client_file_descriptor, &size_list, sizeof(int)) > 0)
+    {
+        fprintf(stderr,"Errore di lettura\n");
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    code_list = (char*)malloc(size_list * 21);
+
+    if(FullRead(client_file_descriptor, code_list, size_list * 21) > 0)
+    {
+        fprintf(stderr,"Errore di lettura\n");
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * ====================
+     * =       MENU       =
+     * ====================
+     * */
+    //TODO: looppare il client con Select
+    if(!run_administrator_menu(&administrator_package, code_list, size_list))
+    {
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_SUCCESS);
+    }
+
+    bzero(command_writer_buffer, CMD_BUFFER_LEN);
+
+    strcpy(command_writer_buffer, "CMD_MOD");
+
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+    FullWrite(client_file_descriptor, &administrator_package, sizeof(administrator_package));
+
+    if(FullRead(client_file_descriptor, &administrator_response_package, sizeof(administrator_response_package)) > 0)
+    {
+        fprintf(stderr,"Errore di lettura\n");
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    if(administrator_response_package.reviser_package.file_flags.read_file_flag || administrator_response_package.reviser_package.file_flags.open_file_flag || administrator_response_package.reviser_package.file_flags.write_file_flag)
+    {
+        fprintf(stderr,"Anomalia durante l'operazione del server\n");
+    }
+    else if(administrator_response_package.not_updatable)
+    {
+        fprintf(stderr,"Impossibile aggiornare l'utente selezionato con i campi scelti\n");
+    }
+    else
+    {
+        printf("Le informazioni sono state aggiornate come segue:\n");
+        print_user_information(&administrator_response_package.reviser_package, 45);
+    }
 
 
     /* Chiusura del socket file descriptor connesso al server */

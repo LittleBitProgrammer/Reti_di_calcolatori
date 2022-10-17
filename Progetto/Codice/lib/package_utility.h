@@ -20,6 +20,7 @@ typedef struct
 {
     bool open_file_flag;
     bool write_file_flag;
+    bool read_file_flag;
 } File_flags;
 
 typedef struct
@@ -36,5 +37,21 @@ typedef struct
     char motivation[13];
     File_flags file_flags;
 } Reviser_package;
+
+typedef struct
+{
+    int index_list;
+    char motivation[13];
+} Administrator_request_package;
+
+typedef struct
+{
+    bool not_updatable;
+    char code[21];
+    Reviser_package reviser_package;
+} Administrator_response_package;
+
+
+//TODO: Fare REFACTOR per gestire l'errore di apertura file durante l'operazione di lettura e popolazione della lista di codici
 
 #endif //PACKAGE_UTILITY_H

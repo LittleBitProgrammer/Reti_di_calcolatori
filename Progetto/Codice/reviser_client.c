@@ -160,14 +160,18 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    printf("\nInformazioni:\n\n");
     if(reviser_package.file_flags.open_file_flag || reviser_package.file_flags.write_file_flag)
     {
         fprintf(stderr,"Anomalia durante l'operazione del server\n");
     }
+    else if(reviser_package.file_flags.read_file_flag)
+    {
+        fprintf(stderr, "Codice tessera sanitaria non esistente\n");
+    }
     else
     {
-        print_reviser_result(&reviser_package, 46);
+        printf("\nInformazioni:\n\n");
+        print_user_information(&reviser_package, 46);
     }
 
     /* Chiusura del socket file descriptor connesso al server */

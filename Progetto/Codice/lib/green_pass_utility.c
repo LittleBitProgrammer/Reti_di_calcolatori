@@ -35,6 +35,8 @@ File_flags* generate_reviser_response(Reviser_package* reviser_package, char* ca
             /* Linea trovata */
             break;
         }
+
+        bzero(reviser_package, sizeof(*reviser_package));
     }
 
     daytime = localtime(&time_stamp);
