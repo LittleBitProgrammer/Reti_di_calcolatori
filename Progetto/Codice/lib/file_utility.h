@@ -11,5 +11,6 @@
 File_result is_code_written_in_file(char*, char*);
 File_result subscribe_vaccinated_client(char*);
 int count_file_lines(char*, char**);
+bool change_information_in_file(Administrator_request_package*, Administrator_response_package*, char*);
 
 #endif //FILE_UTILITY_H

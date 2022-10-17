@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     struct sockaddr_in server_address;
     struct hostent* server_dns;
     char command_writer_buffer[CMD_BUFFER_LEN];
-    Administrator_package administrator_package;
+    Administrator_request_package administrator_package;
     char* code_list;
     int size_list;
     Reviser_package reviser_package;
