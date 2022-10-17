@@ -2,6 +2,7 @@
 #define PACKAGE_UTILITY_H
 
 #include <time.h>
+#include <netinet/in.h>
 #include "bool_utility.h"
 
 typedef struct
@@ -50,7 +51,6 @@ typedef struct
     char code[21];
     Reviser_package reviser_package;
 } Administrator_response_package;
-
 
 //TODO: Fare REFACTOR per gestire l'errore di apertura file durante l'operazione di lettura e popolazione della lista di codici
 

@@ -6,6 +6,8 @@
 #include "lib/thread_utility.h"
 #include "lib/sockets_utility.h"
 
+#define LOG TRUE
+
 int main()
 {
     /* ==========================
@@ -21,6 +23,7 @@ int main()
     socklen_t          client_size = sizeof(client_address);     /* Grandezza espressa in termini di byte dell'Endpoint client */
     int                i = 0;                                    /* Variabile utilizzata da indice per i costrutti iterativi */
     pthread_t          threads_id[MAX_THREADS];                  /* Array contenente i descrittori dei threads utilizzati dal server */
+    Args               thread_arguments;
 
     /* ==========================
      * =    SOCKET CREATION     =
@@ -149,12 +152,18 @@ int main()
 
         /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
+        #ifdef LOG
+        PrintClientIPV4(&client_address, "Connected to");
+        #endif
 
         /*
          * =================================
          * =       THREAD  CREATION        =
          * =================================
          * */
+
+        thread_arguments.file_descriptor = connection_file_descriptor;
+        thread_arguments.endpoint = &client_address;
 
         /*
          * Sfruttiamo la funzione "@pthread_create" per eseguire un nuovo thread nel processo chiamante. Quest'ultima accetterà in
@@ -165,7 +174,7 @@ int main()
          * il server nel caso in cui il client invii una sequenza di byte malevoli, in quanto l'unico processo che verrà bloccato
          * sarà quello del thread, permettendo agli altri client di essere serviti
          * */
-        if((errno = pthread_create(&threads_id[i++], NULL, central_server_handler, &connection_file_descriptor)) != 0)
+        if((errno = pthread_create(&threads_id[i++], NULL, central_server_handler, &thread_arguments)) != 0)
         {
             /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
             perror("Thread creation error");

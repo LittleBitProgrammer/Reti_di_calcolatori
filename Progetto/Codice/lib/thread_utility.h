@@ -6,9 +6,9 @@
 
 typedef struct
 {
-    int arg1;
-    struct sockaddr_in arg2;
-} Arguments;
+    int file_descriptor;
+    struct sockaddr_in* endpoint;
+} Args;
 
 void* vaccination_center_handler(void*);
 void* central_server_handler(void*);
