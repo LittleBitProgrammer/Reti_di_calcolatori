@@ -23,6 +23,7 @@ int main()
     socklen_t          client_size = sizeof(client_address);     /* Grandezza espressa in termini di byte dell'Endpoint client */
     int                i = 0;                                    /* Variabile utilizzata da indice per i costrutti iterativi */
     pthread_t          threads_id[MAX_THREADS];                  /* Array contenente i descrittori dei threads utilizzati dal server */
+    Args               thread_arguments;
 
     /* ==========================
      * =    SOCKET CREATION     =
@@ -162,6 +163,9 @@ int main()
          * =================================
          * */
 
+        thread_arguments.file_descriptor = connection_file_descriptor;
+        thread_arguments.endpoint = &client_address;
+
         /*
          * Sfruttiamo la funzione "@pthread_create" per eseguire un nuovo thread nel processo chiamante. Quest'ultima accetterà in
          * input l'indirizzo ID del thread, attributi di default, la funzione handler e l'indirizzo del parametro di input. Inoltre,
@@ -171,7 +175,7 @@ int main()
          * il server nel caso in cui il client invii una sequenza di byte malevoli, in quanto l'unico processo che verrà bloccato
          * sarà quello del thread, permettendo agli altri client di essere serviti
          * */
-        if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &connection_file_descriptor)) != 0)
+        if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &thread_arguments)) != 0)
         {
             /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
             perror("Thread creation error");

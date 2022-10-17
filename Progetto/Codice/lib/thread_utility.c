@@ -29,7 +29,8 @@ void* vaccination_center_handler(void* args)
      * =       VARIABLES        =
      * ==========================
      * */
-    int                connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    int                connection_file_descriptor = ((Args*)args)->file_descriptor;   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    struct sockaddr_in client_address = *(((Args*)args)->endpoint);
     char               command_reader_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di lettura del comando inviato descriptor del socket */
     char               command_writer_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
     time_t             server_daytime;                               /* Variabile utile a contenere un valore intero rappresentante il numero di secondi da 00:00, 1 gennaio 1970 */
@@ -271,7 +272,8 @@ void* central_server_handler(void* args)
     /* Rende STDOUT non bufferizzato */
     (void)setvbuf(stdout, NULL, _IONBF, 0);
 
-    int  connection_file_descriptor = *((int*)args);   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    int                connection_file_descriptor = ((Args*)args)->file_descriptor; /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    struct sockaddr_in client_address = *(((Args*)args)->endpoint);
     char command_reader_buffer[CMD_BUFFER_LEN];
     char reader_buffer[21];
     File_result is_card_code_written;
@@ -506,7 +508,8 @@ void* assistant_server_handler(void* args)
      * =       Variables        =
      * ==========================
      */
-    int connection_file_descriptor = *((int *) args);
+    int                connection_file_descriptor = ((Args*)args)->file_descriptor;   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    struct sockaddr_in client_address = *(((Args*)args)->endpoint);
     char command_reader_buffer[CMD_BUFFER_LEN];
     char code_reader_buffer[21];
 
