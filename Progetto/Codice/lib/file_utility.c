@@ -167,3 +167,64 @@ int count_file_lines(char* file_name, char** list_codes)
     return line_counter;
 }
 
+bool change_information_in_file(Administrator_request_package* administrator_package, Administrator_response_package* administrator_response, char* file_name)
+{
+    FILE* file_point;
+    int count_lines = 0;
+    long position_cursor;
+    char* overwrite_string = (char*) malloc(MAX_FILE_LINE_SIZE);
+    time_t daytime;
+    struct tm* local_time;
+
+    if((file_point = fopen(file_name, "r+")) == NULL)
+    {
+        fprintf(stderr, "Errore in apertura del file");
+        administrator_response->reviser_package.file_flags.open_file_flag = 1;
+        administrator_response->reviser_package.file_flags.write_file_flag = 0;
+        administrator_response->reviser_package.file_flags.read_file_flag = 0;
+        return FALSE;
+    }
+
+    daytime = time(NULL);
+    local_time = localtime(&daytime);
+
+    if (strlen(overwrite_string) < MAX_FILE_LINE_SIZE - 1)
+    {
+        memset(overwrite_string, 32, MAX_FILE_LINE_SIZE - 1);
+    }
+
+    while(count_lines != administrator_package->index_list)
+    {
+        if((fgetc(file_point)) == '\n')
+        {
+            count_lines++;
+        }
+    }
+
+    // Store the position
+    position_cursor = ftell(file_point);
+
+    fscanf(file_point, "%s %d/%d/%d", administrator_response->code, &(administrator_response->reviser_package.expiration_date.tm_mday),
+                                                       &(administrator_response->reviser_package.expiration_date.tm_mon),
+                                                       &(administrator_response->reviser_package.expiration_date.tm_year));
+
+    //Costruzione della stringa da inserire
+    snprintf(overwrite_string, MAX_FILE_LINE_SIZE - 1, "%s %d/%d/%d %s %d/%d/%d", administrator_response->code,
+                                                                                                   administrator_response->reviser_package.expiration_date.tm_mday,
+                                                                                                   administrator_response->reviser_package.expiration_date.tm_mon,
+                                                                                                   administrator_response->reviser_package.expiration_date.tm_year,
+                                                                                                   administrator_package->motivation,
+                                                                                                   local_time->tm_mday, local_time->tm_mon + 1, local_time->tm_year + 1900);
+    overwrite_string[strlen(overwrite_string)] = 32;
+
+    // Or fseek(file,ftell(file),SEEK_SET);
+    fseek(file_point,position_cursor,SEEK_SET);
+
+    //stampo la nuova stringa
+    fprintf(file_point, "%s\n", overwrite_string);
+
+    fclose(file_point);
+    return TRUE;
+}
+
+

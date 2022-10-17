@@ -42,7 +42,15 @@ typedef struct
 {
     int index_list;
     char motivation[13];
-} Administrator_package;
+} Administrator_request_package;
+
+typedef struct
+{
+    char code[21];
+    Reviser_package reviser_package;
+} Administrator_response_package;
+
+
 //TODO: Fare REFACTOR per gestire l'errore di apertura file durante l'operazione di lettura e popolazione della lista di codici
 
 #endif //PACKAGE_UTILITY_H

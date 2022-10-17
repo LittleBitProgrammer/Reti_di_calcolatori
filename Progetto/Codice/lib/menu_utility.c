@@ -63,7 +63,7 @@ bool run_reviser_menu(char *card_code)
     return TRUE;
 }
 
-bool run_administrator_menu(Administrator_package* administrator_package, char* code_list, int code_size_list)
+bool run_administrator_menu(Administrator_request_package* administrator_package, char* code_list, int code_size_list)
 {
     int index_motivation_choice;
 

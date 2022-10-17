@@ -456,7 +456,8 @@ void* central_server_handler(void* args)
         }
         else if(!strcmp(command_reader_buffer, "CMD_MOD"))
         {
-            Administrator_package update_information_package;
+            Administrator_request_package update_information_package;
+            Administrator_response_package administrator_response_package;
 
             if(FullRead(connection_file_descriptor, &update_information_package, sizeof(update_information_package)) > 0)
             {
@@ -467,7 +468,7 @@ void* central_server_handler(void* args)
                  * */
 
                 /* Caso in cui il client si sia disconnesso */
-                fprintf(stderr, "Server centro vaccinale disconnesso\n");
+                fprintf(stderr, "Server assistente disconnesso\n");
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
                 /*
@@ -477,7 +478,24 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
 
-            
+            if(!change_information_in_file(&update_information_package, &administrator_response_package, VACCINATED_FILE_NAME))
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+
+                /* Chiusura del socket file descriptor connesso al client */
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
+
+            printf("ciao");
         }
     }
 }
@@ -789,7 +807,7 @@ void* assistant_server_handler(void* args)
             int administrator_socket;
             struct sockaddr_in central_server_address;
             const char central_server_ip[] = "127.0.0.1";
-            Administrator_package update_information_package;
+            Administrator_request_package update_information_package;
 
             if(FullRead(connection_file_descriptor, &update_information_package, sizeof(update_information_package)) > 0)
             {

@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     struct sockaddr_in server_address;
     struct hostent* server_dns;
     char command_writer_buffer[CMD_BUFFER_LEN];
-    Administrator_package administrator_package;
+    Administrator_request_package administrator_package;
     char* code_list;
     int size_list;
     Reviser_package reviser_package;
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
     FullWrite(client_file_descriptor, &administrator_package, sizeof(administrator_package));
 
-    FullRead(client_file_descriptor, &reviser_package, sizeof(reviser_package));
+    //FullRead(client_file_descriptor, &reviser_package, sizeof(reviser_package));
 
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);
