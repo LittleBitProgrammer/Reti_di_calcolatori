@@ -53,6 +53,7 @@ build_vaccinated_client:
 		lib/file_utility.c \
 		lib/buffer_utility.c \
 		lib/package_utility.c \
+		lib/green_pass_utility.c \
 		-o ./output/client_vaccinale
 		
 

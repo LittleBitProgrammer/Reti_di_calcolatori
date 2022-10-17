@@ -20,7 +20,8 @@ add_executable(client_vaccinato vaccinated_client.c
                                 lib/digits_utility.c lib/digits_utility.h
                                 lib/file_utility.c lib/file_utility.h
                                 lib/buffer_utility.c lib/buffer_utility.h
-                                lib/package_utility.c lib/package_utility.h)
+                                lib/package_utility.c lib/package_utility.h
+                                lib/green_pass_utility.c lib/green_pass_utility.h)
 
 # - client amministratore
 add_executable(client_amministratore administrator_client.c
