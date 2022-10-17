@@ -21,6 +21,7 @@ int main(int argc, char **argv)
     Administrator_package administrator_package;
     char* code_list;
     int size_list;
+    Reviser_package reviser_package;
 
     /*
     * ==========================
@@ -141,6 +142,8 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    code_list = (char*)malloc(size_list * 21);
+
     if(FullRead(client_file_descriptor, code_list, size_list * 21) > 0)
     {
         fprintf(stderr,"Errore di lettura\n");
@@ -155,7 +158,7 @@ int main(int argc, char **argv)
      * =       MENU       =
      * ====================
      * */
-
+    //TODO: looppare il client con Select
     if(!run_administrator_menu(&administrator_package, code_list, size_list))
     {
         /* Chiusura del socket file descriptor connesso al server */
@@ -163,6 +166,15 @@ int main(int argc, char **argv)
         /* Terminiamo con successo il processo client */
         exit(EXIT_SUCCESS);
     }
+
+    bzero(command_writer_buffer, CMD_BUFFER_LEN);
+
+    strcpy(command_writer_buffer, "CMD_MOD");
+
+    FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+    FullWrite(client_file_descriptor, &administrator_package, sizeof(administrator_package));
+
+    FullRead(client_file_descriptor, &reviser_package, sizeof(reviser_package));
 
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);

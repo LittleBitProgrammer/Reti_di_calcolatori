@@ -10,5 +10,6 @@ bool run_administrator_menu(Administrator_package*, char*, int);
 void print_logo(void);
 void print_reviser_result(Reviser_package*, int);
 void print_menu_divider(int);
+void print_code_list(char*, int);
 
 #endif // MENU_UTILITY_H

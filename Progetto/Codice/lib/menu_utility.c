@@ -65,6 +65,8 @@ bool run_reviser_menu(char *card_code)
 
 bool run_administrator_menu(Administrator_package* administrator_package, char* code_list, int code_size_list)
 {
+    int index_motivation_choice;
+
     print_logo();
     printf("Benvenuti sulla piattaforma Green Pass.\n\n");
 
@@ -73,12 +75,31 @@ bool run_administrator_menu(Administrator_package* administrator_package, char* 
         printf("Non ci sono elementi da aggiornare\n");
         return FALSE;
     }
-    printf("Inserire codice tessera sanitaria (controllare il punto '8' sul retro della tessera)"
-                  "di cui si vuole aggiornare lo stato: ");
 
-    //fscanf(stdin,"%s", line_index);
+    print_code_list(code_list, code_size_list);
+
+    printf("Scegliere uno dei seguenti codici tessera sanitaria: ");
+
+    fscanf(stdin,"%d", &(administrator_package->index_list));
+
+    administrator_package->index_list -= 1;
 
     free_input_buffer();
+
+    printf("Scegliere il codice della motivazione:\n");
+    printf("1. Guarigione\n");
+    printf("2. Covid\n");
+    printf("> ");
+
+    fscanf(stdin, "%d", &index_motivation_choice);
+
+    if(index_motivation_choice < 1 || index_motivation_choice > 2)
+    {
+        fprintf(stderr, "Scelta selezionata errata");
+        return FALSE;
+    }
+
+    strcpy(administrator_package->motivation, (index_motivation_choice == 1) ? "Guarigione" : "Covid");
 
     return TRUE;
 }
@@ -123,6 +144,22 @@ void print_menu_divider(int divider_length)
     {
         printf("=");
     }
+
+    printf("\n");
+}
+
+void print_code_list(char* code_list, int size)
+{
+    int i;
+
+    print_menu_divider(45);
+    printf("Indice    Codici Tessera Sanitaria\n");
+    print_menu_divider(45);
+    for(i = 0; i < size; i++)
+    {
+        printf("%2d.       %s\n", i + 1, code_list + i * 21);
+    }
+    print_menu_divider(45);
 
     printf("\n");
 }
