@@ -6,6 +6,8 @@
 #include "lib/thread_utility.h"   /* Importata per utilizzare costanti e funzioni legate alla tecnologia thread */
 #include "lib/sockets_utility.h"  /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 
+#define LOG TRUE
+
 int main()
 {
     /* ==========================
@@ -149,6 +151,10 @@ int main()
 
         /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
+
+        #ifdef LOG
+        PrintClientIPV4(&client_address, "Connected to");
+        #endif
 
         /*
          * =================================
