@@ -513,8 +513,18 @@ void* central_server_handler(void* args)
         else if(!strcmp(command_reader_buffer, "CMD_LST"))
         {
             char* vaccinated_array_list;
-            //TODO: Gestirsi l'errore di apertura
-            int size_vaccinated_list = count_file_lines(VACCINATED_FILE_NAME, &vaccinated_array_list);
+            int size_vaccinated_list;
+
+            if((size_vaccinated_list = count_file_lines(VACCINATED_FILE_NAME, &vaccinated_array_list)) == -1)
+            {
+                #ifdef LOG
+                PrintClientIPV4(&client_address,"Disconnected from client:");
+                #endif
+
+                free(vaccinated_array_list);
+                close(connection_file_descriptor);
+                pthread_exit(NULL);
+            }
 
             FullWrite(connection_file_descriptor, &size_vaccinated_list, sizeof(int));
             #ifdef LOG
