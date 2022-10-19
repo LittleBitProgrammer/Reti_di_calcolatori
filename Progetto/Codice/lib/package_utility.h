@@ -52,6 +52,4 @@ typedef struct
     Reviser_package reviser_package;
 } Administrator_response_package;
 
-//TODO: Fare REFACTOR per gestire l'errore di apertura file durante l'operazione di lettura e popolazione della lista di codici
-
 #endif //PACKAGE_UTILITY_H

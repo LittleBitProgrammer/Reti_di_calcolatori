@@ -54,6 +54,7 @@ build_vaccinated_client:
 		lib/buffer_utility.c \
 		lib/package_utility.c \
 		lib/green_pass_utility.c \
+		lib/thread_utility.c \
 		-o ./output/client_vaccinale
 		
 
@@ -70,6 +71,7 @@ build_reviser_client:
 		lib/buffer_utility.c \
 		lib/package_utility.c \
 		lib/green_pass_utility.c \
+		lib/thread_utility.c \
 		-o ./output/client_reviser
 
 # Build client amministratore
@@ -85,6 +87,7 @@ build_administrator_client:
 		lib/buffer_utility.c \
 		lib/package_utility.c \
 		lib/green_pass_utility.c \
+		lib/thread_utility.c \
 		-o output/client_administrator
 
 # Run del server centrale
