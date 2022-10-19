@@ -82,6 +82,12 @@ bool run_administrator_menu(Administrator_request_package* administrator_package
 
     fscanf(stdin,"%d", &(administrator_package->index_list));
 
+    if(administrator_package->index_list < 1 || administrator_package->index_list > code_size_list)
+    {
+        printf("Elemento selezionato non esistente\n");
+        return FALSE;
+    }
+
     administrator_package->index_list -= 1;
 
     free_input_buffer();
