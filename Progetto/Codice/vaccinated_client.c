@@ -27,7 +27,13 @@ int main(int argc, char **argv)
                                                                                         da parte del client */
     char*              verification_code = (char *)malloc(CL * sizeof(char));   /*  */
     Vaccinated_package vaccinated_request_package;                                   /*  */
-    File_result     is_green_pass_obtained;                                  /*  */
+    File_result        is_green_pass_obtained;                                       /*  */
+
+    if(server_daytime == NULL || client_daytime == NULL || verification_code == NULL)
+    {
+        fprintf(stderr, "Errore durante l'allocazione\n");
+        exit(EXIT_FAILURE);
+    }
 
     /*
      * ==========================

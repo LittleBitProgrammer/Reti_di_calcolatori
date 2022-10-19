@@ -39,7 +39,10 @@ File_flags* generate_reviser_response(Reviser_package* reviser_package, char* ca
         bzero(reviser_package, sizeof(*reviser_package));
     }
 
-    daytime = localtime(&time_stamp);
+    if((daytime = localtime(&time_stamp)) == NULL)
+    {
+        return NULL;
+    }
     reviser_package->is_green_pass_valid = check_green_pass_validity(&reviser_package->expiration_date, daytime, reviser_package->motivation);
     fclose(vaccinated_file);
     return NULL;

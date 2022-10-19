@@ -3,6 +3,7 @@
 #include <string.h>             /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
 #include <time.h>               /* Importata per utilizzare la funzione "@time()" */
 #include <unistd.h>             /* Importata per utilizzare la funzione "@close() */
+#include <sys/syscall.h>
 #include "sockets_utility.h"    /* Importata per utilizzare le funzioni:
                                         1. "@FullRead()"
                                         2. "@FullWrite()"
@@ -16,6 +17,19 @@
 #include "green_pass_utility.h"
 
 #define LOG TRUE
+#include <unistd.h>
+#include <sys/syscall.h>
+
+#ifndef SYS_gettid
+#error "SYS_gettid unavailable on this system"
+#endif
+
+#define gettid() ((pid_t)syscall(SYS_gettid))
+
+bool is_main_thread(void)
+{
+    return getpid() == gettid();
+}
 
 /**
  * @brief
@@ -70,7 +84,7 @@ void* vaccination_center_handler(void* args)
 
             /* Caso in cui il client si sia disconnesso */
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+            LogHostIPV4(&client_address, "Client disconnected:", NULL);
             #endif
             /* Chiusura del socket file descriptor connesso al client */
             close(connection_file_descriptor);
@@ -81,7 +95,7 @@ void* vaccination_center_handler(void* args)
             pthread_exit(NULL);
         }
         #ifdef LOG
-        PrintClientIPV4(&client_address,"Request received from", "Command request");
+        LogHostIPV4(&client_address, "Request received from", "Command request");
         #endif
         /*
          * ================================
@@ -104,12 +118,15 @@ void* vaccination_center_handler(void* args)
             if((local_daytime = localtime(&server_daytime)) == NULL)
             {
                 fprintf(stderr, "local day time error\n");
+
+                close(connection_file_descriptor);
+                pthread_exit(NULL);
             }
 
             /* Ci avvaliamo della funzione "@FullWrite" per scrivere sul socket i bytes che compongono la struttura di tipo "@tm" */
             FullWrite(connection_file_descriptor, local_daytime, sizeof(*local_daytime));
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
         }
         else if(!strcmp(command_reader_buffer, "CMD_SUB"))
@@ -138,7 +155,7 @@ void* vaccination_center_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+                LogHostIPV4(&client_address, "Client disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -149,7 +166,7 @@ void* vaccination_center_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response received from", command_reader_buffer);
             #endif
 
             /* ==========================
@@ -220,17 +237,17 @@ void* vaccination_center_handler(void* args)
 
             FullWrite(subscription_socket, command_writer_buffer, CMD_BUFFER_LEN);
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
             #endif
             FullWrite(subscription_socket, vaccinated_response_package.card_code, sizeof(vaccinated_response_package.card_code));
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
             #endif
 
             if(FullRead(subscription_socket, &is_card_code_written, sizeof(File_result)) > 0)
             {
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Server disconnected from:", NULL);
+                LogHostIPV4(&central_server_address, "Server disconnected from:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -242,7 +259,7 @@ void* vaccination_center_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Response received from", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Response received from", command_reader_buffer);
             #endif
 
             if(is_card_code_written.file_flags.open_file_flag)
@@ -252,7 +269,7 @@ void* vaccination_center_handler(void* args)
                 is_card_code_written.result_flag = !is_card_code_written.result_flag;
                 FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(File_result));
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+                LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
                 #endif
 
                 /* Chiusura del socket file descriptor connesso al client */
@@ -275,22 +292,22 @@ void* vaccination_center_handler(void* args)
 
                 FullWrite(subscription_socket, command_writer_buffer, CMD_BUFFER_LEN);
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+                LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
                 #endif
                 FullWrite(subscription_socket, &sub_client_vaccination, sizeof(sub_client_vaccination));
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+                LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
                 #endif
 
                 FullRead(subscription_socket, &is_subscribed, sizeof(File_result));
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Response received from", command_reader_buffer);
+                LogHostIPV4(&central_server_address, "Response received from", command_reader_buffer);
                 #endif
                 close(subscription_socket);
 
                 FullWrite(connection_file_descriptor, &is_subscribed, sizeof(File_result));
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Request sent to", command_reader_buffer);
+                LogHostIPV4(&client_address, "Request sent to", command_reader_buffer);
                 #endif
             }
             else
@@ -300,7 +317,7 @@ void* vaccination_center_handler(void* args)
                 is_card_code_written.result_flag = !is_card_code_written.result_flag;
                 FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(File_result));
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Request sent to", command_reader_buffer);
+                LogHostIPV4(&client_address, "Request sent to", command_reader_buffer);
                 #endif
             }
         }
@@ -345,7 +362,7 @@ void* central_server_handler(void* args)
 
             /* Caso in cui il client si sia disconnesso */
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+            LogHostIPV4(&client_address, "Client disconnected:", NULL);
             #endif
             /* Chiusura del socket file descriptor connesso al client */
             close(connection_file_descriptor);
@@ -356,7 +373,7 @@ void* central_server_handler(void* args)
             pthread_exit(NULL);
         }
         #ifdef LOG
-        PrintClientIPV4(&client_address,"Request received from", "Command request");
+        LogHostIPV4(&client_address, "Request received from", "Command request");
         #endif
         /*
          * ================================
@@ -375,7 +392,7 @@ void* central_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+                LogHostIPV4(&client_address, "Client disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -386,12 +403,12 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Request received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
             is_card_code_written = is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer);
             FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(File_result));
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
         }
         else if(!strcmp(command_reader_buffer, "CMD_MEM"))
@@ -413,7 +430,7 @@ void* central_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+                LogHostIPV4(&client_address, "Client disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -424,7 +441,7 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Request received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
 
             strftime(expiration_date_buffer, MAX_DATE_LEN, "%d/%m/%Y", &(sub_client_vaccination.expiration_date));
@@ -437,7 +454,7 @@ void* central_server_handler(void* args)
             is_subscribed = subscribe_vaccinated_client(file_writer_buffer);
             FullWrite(connection_file_descriptor, &is_subscribed, sizeof(File_result));
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
             if(!is_subscribed.result_flag)
             {
@@ -473,7 +490,7 @@ void* central_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+                LogHostIPV4(&client_address, "Client disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -484,7 +501,7 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Request received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
             if(is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer).result_flag)
             {
@@ -507,7 +524,7 @@ void* central_server_handler(void* args)
 
             FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
         }
         else if(!strcmp(command_reader_buffer, "CMD_LST"))
@@ -518,7 +535,7 @@ void* central_server_handler(void* args)
             if((size_vaccinated_list = read_lines(VACCINATED_FILE_NAME, &vaccinated_array_list)) == -1)
             {
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Disconnected from client:", NULL);
+                LogHostIPV4(&client_address, "Disconnected from client:", NULL);
                 #endif
 
                 free(vaccinated_array_list);
@@ -528,11 +545,11 @@ void* central_server_handler(void* args)
 
             FullWrite(connection_file_descriptor, &size_vaccinated_list, sizeof(int));
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
             FullWrite(connection_file_descriptor, vaccinated_array_list, size_vaccinated_list * 21);
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
 
             free(vaccinated_array_list);
@@ -552,7 +569,7 @@ void* central_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+                LogHostIPV4(&client_address, "Client disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -563,7 +580,7 @@ void* central_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Request received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
 
             if(!change_information_in_file(&update_information_package, &administrator_response_package, VACCINATED_FILE_NAME))
@@ -585,7 +602,7 @@ void* central_server_handler(void* args)
 
             FullWrite(connection_file_descriptor, &administrator_response_package, sizeof(administrator_response_package));
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
         }
     }
@@ -628,7 +645,7 @@ void* assistant_server_handler(void* args)
 
             /* Caso in cui il client si sia disconnesso */
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+            LogHostIPV4(&client_address, "Client disconnected:", NULL);
             #endif
             /* Chiusura del socket file descriptor connesso al client */
             close(connection_file_descriptor);
@@ -639,7 +656,7 @@ void* assistant_server_handler(void* args)
             pthread_exit(NULL);
         }
         #ifdef LOG
-        PrintClientIPV4(&client_address,"Request received from", "Command request");
+        LogHostIPV4(&client_address, "Request received from", "Command request");
         #endif
 
         /*
@@ -658,7 +675,7 @@ void* assistant_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+                LogHostIPV4(&client_address, "Client disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -669,7 +686,7 @@ void* assistant_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Request received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
 
             /*
@@ -748,13 +765,13 @@ void* assistant_server_handler(void* args)
             FullWrite(reviser_socket, command_reader_buffer, CMD_BUFFER_LEN);
 
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
             #endif
 
             FullWrite(reviser_socket, code_reader_buffer, 21);
 
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
             #endif
 
             if(FullRead(reviser_socket, &reviser_package, sizeof(reviser_package)) > 0)
@@ -767,7 +784,7 @@ void* assistant_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Server disconnected:", NULL);
+                LogHostIPV4(&central_server_address, "Server disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(reviser_socket);
@@ -779,14 +796,14 @@ void* assistant_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Response received from", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Response received from", command_reader_buffer);
             #endif
 
             close(reviser_socket);
             FullWrite(connection_file_descriptor, &reviser_package, sizeof(reviser_package));
 
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
         }
         else if(!strcmp(command_reader_buffer, "CMD_LST"))
@@ -869,7 +886,7 @@ void* assistant_server_handler(void* args)
 
             FullWrite(administrator_socket, command_reader_buffer, CMD_BUFFER_LEN);
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
             #endif
 
             if(FullRead(administrator_socket, &size_codes_list, sizeof(int)) > 0)
@@ -882,7 +899,7 @@ void* assistant_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Server disconnected:", NULL);
+                LogHostIPV4(&central_server_address, "Server disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(administrator_socket);
@@ -894,10 +911,31 @@ void* assistant_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Response received from", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Response received from", command_reader_buffer);
             #endif
 
-            codes_list = (char*)malloc(size_codes_list * 21);
+            if((codes_list = (char*)malloc(size_codes_list * 21)) == NULL)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+                /* Caso in cui il client si sia disconnesso */
+                #ifdef LOG
+                LogHostIPV4(&central_server_address, "Server disconnected:", NULL);
+                #endif
+
+                free(codes_list);
+                /* Chiusura del socket file descriptor connesso al client */
+                close(administrator_socket);
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
 
             if(FullRead(administrator_socket, codes_list, size_codes_list * 21) > 0)
             {
@@ -908,8 +946,10 @@ void* assistant_server_handler(void* args)
                  * */
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Server disconnected:", NULL);
+                LogHostIPV4(&central_server_address, "Server disconnected:", NULL);
                 #endif
+
+                free(codes_list);
                 /* Chiusura del socket file descriptor connesso al client */
                 close(administrator_socket);
                 close(connection_file_descriptor);
@@ -920,21 +960,23 @@ void* assistant_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Response received from", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Response received from", command_reader_buffer);
             #endif
             
             close(administrator_socket);
             FullWrite(connection_file_descriptor, &size_codes_list, sizeof(int));
 
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
 
             FullWrite(connection_file_descriptor, codes_list, size_codes_list * 21);
 
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
+
+            free(codes_list);
         }
         else if(!strcmp(command_reader_buffer, "CMD_MOD"))
         {
@@ -959,7 +1001,7 @@ void* assistant_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&client_address,"Client disconnected:", NULL);
+                LogHostIPV4(&client_address, "Client disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
@@ -971,7 +1013,7 @@ void* assistant_server_handler(void* args)
             }
 
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Request received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
 
 
@@ -1042,13 +1084,13 @@ void* assistant_server_handler(void* args)
             FullWrite(administrator_socket, command_reader_buffer, CMD_BUFFER_LEN);
 
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
             #endif
 
             FullWrite(administrator_socket, &update_information_package, sizeof(update_information_package));
 
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Request sent to", command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Request sent to", command_reader_buffer);
             #endif
 
 
@@ -1062,7 +1104,7 @@ void* assistant_server_handler(void* args)
 
                 /* Caso in cui il client si sia disconnesso */
                 #ifdef LOG
-                PrintClientIPV4(&central_server_address,"Server disconnected:", NULL);
+                LogHostIPV4(&central_server_address, "Server disconnected:", NULL);
                 #endif
                 /* Chiusura del socket file descriptor connesso al client */
                 close(administrator_socket);
@@ -1074,14 +1116,14 @@ void* assistant_server_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            PrintClientIPV4(&central_server_address,"Response received from",command_reader_buffer);
+            LogHostIPV4(&central_server_address, "Response received from", command_reader_buffer);
             #endif
 
             close(administrator_socket);
             FullWrite(connection_file_descriptor, &response_from_server, sizeof(response_from_server));
 
             #ifdef LOG
-            PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
+            LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
         }
     }
