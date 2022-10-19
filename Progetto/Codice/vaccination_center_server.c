@@ -6,8 +6,12 @@
 #include "lib/thread_utility.h"   /* Importata per utilizzare costanti e funzioni legate alla tecnologia thread */
 #include "lib/sockets_utility.h"  /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
 
-int main(int argc, char **argv)
+#define LOG TRUE
+
+int main()
 {
+    /* Rende STDOUT non bufferizzato */
+    (void)setvbuf(stdout, NULL, _IONBF, 0);
     /* ==========================
      * =       VARIABLES        =
      * ==========================
@@ -21,6 +25,7 @@ int main(int argc, char **argv)
     socklen_t          client_size = sizeof(client_address);     /* Grandezza espressa in termini di byte dell'Endpoint client */
     int                i = 0;                                    /* Variabile utilizzata da indice per i costrutti iterativi */
     pthread_t          threads_id[MAX_THREADS];                  /* Array contenente i descrittori dei threads utilizzati dal server */
+    Args               thread_arguments;
 
     /* ==========================
      * =    SOCKET CREATION     =
@@ -93,7 +98,7 @@ int main(int argc, char **argv)
      *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
      * Per il progetto si è deciso di utilizzare una porta registrata "6463"
      * */
-    server_address.sin_port = htons(6463);
+    server_address.sin_port = htons(6462);
 
     /*
      * ==================================
@@ -150,11 +155,18 @@ int main(int argc, char **argv)
         /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
 
+        #ifdef LOG
+        LogHostIPV4(&client_address, "Connected to", NULL);
+        #endif
+
         /*
          * =================================
          * =       THREAD  CREATION        =
          * =================================
          * */
+
+        thread_arguments.file_descriptor = connection_file_descriptor;
+        thread_arguments.endpoint = &client_address;
 
         /*
          * Sfruttiamo la funzione "@pthread_create" per eseguire un nuovo thread nel processo chiamante. Quest'ultima accetterà in
@@ -165,7 +177,7 @@ int main(int argc, char **argv)
          * il server nel caso in cui il client invii una sequenza di byte malevoli, in quanto l'unico processo che verrà bloccato
          * sarà quello del thread, permettendo agli altri client di essere serviti
          * */
-        if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &connection_file_descriptor)) != 0)
+        if((errno = pthread_create(&threads_id[i++], NULL, vaccination_center_handler, &thread_arguments)) != 0)
         {
             /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
             perror("Thread creation error");

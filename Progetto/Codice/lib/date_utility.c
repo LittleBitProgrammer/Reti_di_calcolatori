@@ -1,6 +1,6 @@
 #include <stdio.h>              /*  */
 #include <string.h>             /*  */
-#include "data_utility.h"       /*  */
+#include "date_utility.h"       /*  */
 
 /**
  * @brief
@@ -110,15 +110,15 @@ bool is_leap(int year)
 /**
  * @brief
  *
- * @param vaccination_date
- * @param local_daytime
+ * @param date_1
+ * @param date_2
  *
  * @return
  * */
-int compare_date(struct tm* vaccination_date, struct tm* local_daytime)
+int compare_date(struct tm* date_1, struct tm* date_2)
 {
-    time_t vaccination_date_time = mktime(vaccination_date);
-    time_t local_time = mktime(local_daytime);
+    time_t vaccination_date_time = mktime(date_1);
+    time_t local_time = mktime(date_2);
 
     if(vaccination_date_time > local_time)
     {
@@ -128,4 +128,31 @@ int compare_date(struct tm* vaccination_date, struct tm* local_daytime)
     double seconds = difftime(local_time, vaccination_date_time);
 
     return (int)(seconds / (60 * 60 * 24));
+}
+
+/**
+ * @brief
+ *
+ * @param vaccination_date
+ *
+ * @return
+ * */
+struct tm add_month_to_date(struct tm vaccination_date, int months)
+{
+    struct tm expiration_date = vaccination_date;
+
+    expiration_date.tm_mon += months;
+    mktime(&expiration_date);
+
+    return expiration_date;
+}
+
+char* get_timestamp(void)
+{
+    time_t timestamp = time(NULL);
+    char *daytime = ctime(&timestamp);
+
+    daytime[strlen(daytime)-1] = 0;
+
+    return daytime;
 }

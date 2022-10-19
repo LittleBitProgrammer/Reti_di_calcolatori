@@ -2,7 +2,11 @@
 #include <stdlib.h>             /* Importata per utilizzare la funzione "@exit()" */
 #include <unistd.h>             /* Importata per utilizzare le funzioni "@read()" e "@write()" */
 #include <errno.h>              /* Importata per utilizzare la variabile globale "@errno" e la costante "@EINTR" */
+#include <netdb.h>
+#include <string.h>
 #include "sockets_utility.h"
+#include "date_utility.h"
+#include "thread_utility.h"
 
 /**
  * @brief Funzione che permette la creazione di un file descriptor associato ad una socket
@@ -27,7 +31,15 @@ int Socket(int address_family, int transport_type, int transport_subtype)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
         perror("Creation socket error");
-        exit(EXIT_FAILURE);
+
+        if(is_main_thread())
+        {
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            pthread_exit(NULL);
+        }
     }
 
     return file_descriptor;
@@ -118,7 +130,14 @@ void ConnectIPV4(int file_descriptor_to_connect, struct sockaddr_in* destination
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
         perror("Connect IPv4 error");
-        exit(EXIT_FAILURE);
+        if(is_main_thread())
+        {
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            pthread_exit(NULL);
+        }
     }
 }
 
@@ -193,7 +212,14 @@ size_t FullRead(int file_descriptor, void* buffer, size_t n_bytes)
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
                 perror("Reading error");
-                exit((int)n_read);
+                if(is_main_thread())
+                {
+                    exit(EXIT_FAILURE);
+                }
+                else
+                {
+                    pthread_exit(NULL);
+                }
             }
         }
         else if(n_read == 0) /* Caso in cui viene raggiunto "@EOF" */
@@ -252,7 +278,14 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
                 perror("Writing error");
-                exit((int)n_written);
+                if(is_main_thread())
+                {
+                    exit(EXIT_FAILURE);
+                }
+                else
+                {
+                    pthread_exit(NULL);
+                }
             }
         }
 
@@ -264,4 +297,34 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
     }
 
     return n_left;
+}
+
+void LogHostIPV4(struct sockaddr_in* client_address, char* type_of_request, char* command)
+{
+    struct hostent *host;
+    char buffer[INET6_ADDRSTRLEN];
+    char* timestamp = get_timestamp();
+
+    inet_ntop(AF_INET, &(client_address->sin_addr),buffer,INET6_ADDRSTRLEN);
+
+    printf("%s%s%s%s - %s host %s, port %d,", (timestamp != NULL) ? timestamp : "",
+                                                     (command != NULL) ? " (" : "",
+                                                     (command != NULL) ? command : "",
+                                                     (command != NULL) ? ")" : "",
+                                                     type_of_request, buffer, ntohs(client_address->sin_port));
+
+    if((host = gethostbyaddr((const char *) &(client_address->sin_addr), sizeof(client_address->sin_addr), client_address->sin_family)) == NULL)
+    {
+        herror("Reverse DNS error: ");
+        if(is_main_thread())
+        {
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            pthread_exit(NULL);
+        }
+    }
+
+    printf(" hostname %s\n", host->h_name);
 }

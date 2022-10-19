@@ -27,6 +27,13 @@ int main(int argc, char **argv)
                                                                                         da parte del client */
     char*              verification_code = (char *)malloc(CL * sizeof(char));   /*  */
     Vaccinated_package vaccinated_request_package;                                   /*  */
+    File_result        is_green_pass_obtained;                                       /*  */
+
+    if(server_daytime == NULL || client_daytime == NULL || verification_code == NULL)
+    {
+        fprintf(stderr, "Errore durante l'allocazione\n");
+        exit(EXIT_FAILURE);
+    }
 
     /*
      * ==========================
@@ -127,7 +134,7 @@ int main(int argc, char **argv)
      *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
      * Per il progetto si è deciso di utilizzare una porta registrata "6463"
      * */
-     server_address.sin_port = htons(6463);
+     server_address.sin_port = htons(6462);
 
     /*
      * ==================================
@@ -210,6 +217,32 @@ int main(int argc, char **argv)
 
     /*  */
     FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
+
+    /*  */
+    if(FullRead(client_file_descriptor, &is_green_pass_obtained, sizeof(File_result)) > 0)
+    {
+        /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
+        free(server_daytime);
+        free(client_daytime);
+        free(verification_code);
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
+
+    if(is_green_pass_obtained.file_flags.write_file_flag || is_green_pass_obtained.file_flags.open_file_flag)
+    {
+        fprintf(stderr,"Anomalia durante l'operazione del server\n");
+    }
+    else if(is_green_pass_obtained.result_flag)
+    {
+        printf("Caricato con successo\n");
+    }
+    else
+    {
+        fprintf(stderr,"Errore nel caricamento\n");
+    }
 
     /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
     free(server_daytime);

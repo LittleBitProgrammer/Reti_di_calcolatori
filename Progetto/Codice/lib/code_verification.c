@@ -11,7 +11,7 @@
  *
  * @return
  * */
-bool insert_card_code(char* code)
+bool verify_card_code(char* code)
 {
     size_t code_len = strlen(code);
 
@@ -33,7 +33,13 @@ bool insert_card_code(char* code)
              *      1. I primi 5 numeri standard per ogni codice;
              *      2. I successivi 5 numeri che corrispondono alle regioni italiane;
              * */
-            if(!strncmp(code, "80380", 5) && check_region_code(code))
+            File_result file_result;
+
+            if((file_result = check_region_code(code)).file_flags.open_file_flag)
+            {
+                return FALSE;
+            }
+            if(!strncmp(code, "80380", 5) && file_result.result_flag)
             {
                 return TRUE;
             }
@@ -56,7 +62,7 @@ bool insert_card_code(char* code)
  *
  * @return
  * */
-bool check_region_code(char *code)
+File_result check_region_code(char *code)
 {
     /* */
     char sub_code[6];
