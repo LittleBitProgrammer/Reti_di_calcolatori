@@ -122,7 +122,7 @@ File_result subscribe_vaccinated_client(char* vaccinated_client_info)
 int read_lines(char* file_name, char** list_codes)
 {
     FILE* file_point;
-    int line_counter;
+    int line_counter = 0;
     int read_character;
     char buffer[21];
     int counter = 0;
