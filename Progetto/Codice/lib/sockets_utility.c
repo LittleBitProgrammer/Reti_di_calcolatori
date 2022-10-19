@@ -274,10 +274,11 @@ void PrintClientIPV4(struct sockaddr_in* client_address, char* type_of_request, 
 {
     struct hostent *host;
     char buffer[INET6_ADDRSTRLEN];
+    char* timestamp = get_timestamp();
 
     inet_ntop(AF_INET, &(client_address->sin_addr),buffer,INET6_ADDRSTRLEN);
 
-    printf("%s%s%s%s - %s host %s, port %d,", get_timestamp(),
+    printf("%s%s%s%s - %s host %s, port %d,", (timestamp != NULL) ? timestamp : "",
                                                      (command != NULL) ? " (" : "",
                                                      (command != NULL) ? command : "",
                                                      (command != NULL) ? ")" : "",

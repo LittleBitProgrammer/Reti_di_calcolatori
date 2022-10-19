@@ -104,6 +104,9 @@ void* vaccination_center_handler(void* args)
             if((local_daytime = localtime(&server_daytime)) == NULL)
             {
                 fprintf(stderr, "local day time error\n");
+
+                close(connection_file_descriptor);
+                pthread_exit(NULL);
             }
 
             /* Ci avvaliamo della funzione "@FullWrite" per scrivere sul socket i bytes che compongono la struttura di tipo "@tm" */

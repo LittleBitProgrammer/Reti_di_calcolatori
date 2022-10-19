@@ -172,7 +172,10 @@ bool change_information_in_file(Administrator_request_package* update_package, A
     }
 
     daytime = time(NULL);
-    local_time = localtime(&daytime);
+    if((local_time = localtime(&daytime)) == NULL)
+    {
+        return FALSE;
+    }
 
     if (strlen(overwrite_string) < MAX_FILE_LINE_SIZE - 1)
     {

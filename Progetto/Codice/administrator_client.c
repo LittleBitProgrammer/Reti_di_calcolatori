@@ -158,7 +158,6 @@ int main(int argc, char **argv)
      * =       MENU       =
      * ====================
      * */
-    //TODO: looppare il client con Select
     if(!run_administrator_menu(&administrator_package, code_list, size_list))
     {
         /* Chiusura del socket file descriptor connesso al server */
