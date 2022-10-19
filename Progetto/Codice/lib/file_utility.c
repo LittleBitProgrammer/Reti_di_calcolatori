@@ -16,8 +16,17 @@
 File_result is_code_written_in_file(char *file_name, char *code)
 {
     /* Buffer di lettura da file */
-    char *line = (char *)malloc(56 * sizeof(char));
-    char *tokens;
+    char* line = (char *)malloc(56 * sizeof(char));
+    char* tokens;
+
+    if(line == NULL)
+    {
+        char* time_stamp = get_timestamp();
+        File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 0, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 1};
+
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", (time_stamp != NULL) ? time_stamp : "/");
+        return file_errors;
+    }
 
     /* Apriamo il file contenente tutti i sottocodici delle regioni */
     FILE* file_codes;
@@ -25,9 +34,10 @@ File_result is_code_written_in_file(char *file_name, char *code)
     /* Controlliamo se il file è stato aperto correttamente */
     if ((file_codes = fopen(file_name, "r")) == NULL)
     {
+        char* time_stamp = get_timestamp();
         File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 1, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
 
-        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", (time_stamp != NULL) ? time_stamp : "/");
         return file_errors;
     }
 
@@ -87,18 +97,19 @@ File_result subscribe_vaccinated_client(char* vaccinated_client_info)
 
     if((vaccinated_file = fopen(VACCINATED_FILE_NAME, "a")) == NULL)
     {
+        char* time_stamp = get_timestamp();
         File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 1, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
 
-        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", (time_stamp != NULL) ? time_stamp : "/");
         return file_errors;
     }
 
     if(fprintf(vaccinated_file, "%s\n", vaccinated_client_info) < 0)
     {
+        char* time_stamp = get_timestamp();
         File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 0, .file_flags.write_file_flag = 1, .file_flags.read_file_flag = 0};
 
-
-        fprintf(stderr, "%s - Errore nella scrittura del File\n", get_timestamp());
+        fprintf(stderr, "%s - Errore nella scrittura del File\n", (time_stamp != NULL) ? time_stamp : "/");
         fclose(vaccinated_file);
         return file_errors;
     }
@@ -118,7 +129,8 @@ int read_lines(char* file_name, char** list_codes)
 
     if((file_point = fopen(file_name, "r")) == NULL)
     {
-        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
+        char* time_stamp = get_timestamp();
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", (time_stamp != NULL) ? time_stamp : "/");
         return -1;
     }
 
@@ -135,12 +147,17 @@ int read_lines(char* file_name, char** list_codes)
         *list_codes = (char*)malloc(line_counter * 21);
         line_counter = 0;
 
+        if(list_codes == NULL)
+        {
+            fprintf(stderr, "Errore durante l'allocazione\n");
+            return -1;
+        }
+
         fseek(file_point, 0, SEEK_SET);
         while(fscanf(file_point, "%s", buffer) != EOF)
         {
             if(counter % 4 == 0)
             {
-                //list_codes[line_counter] = (char*)malloc(21);
                 strcpy((*list_codes + (line_counter * 21)), buffer);
                 line_counter++;
             }
@@ -162,18 +179,30 @@ bool change_information_in_file(Administrator_request_package* update_package, A
     time_t daytime;
     struct tm* local_time;
 
+    if(overwrite_string == NULL)
+    {
+        File_flags file_errors = {.open_file_flag = 0, .write_file_flag = 1, .read_file_flag = 0};
+        administrator_response->reviser_package.file_flags = file_errors;
+
+        fprintf(stderr, "Errore durante l'allocazione\n");
+        return FALSE;
+    }
+
     if((file_point = fopen(file_name, "r+")) == NULL)
     {
+        char* time_stamp = get_timestamp();
         File_flags file_errors = {.open_file_flag = 1, .write_file_flag = 0, .read_file_flag = 0};
         administrator_response->reviser_package.file_flags = file_errors;
 
-        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", (time_stamp != NULL) ? time_stamp : "/");
         return FALSE;
     }
 
     daytime = time(NULL);
     if((local_time = localtime(&daytime)) == NULL)
     {
+        File_flags file_errors = {.open_file_flag = 0, .write_file_flag = 1, .read_file_flag = 0};
+        administrator_response->reviser_package.file_flags = file_errors;
         return FALSE;
     }
 

@@ -142,7 +142,14 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    code_list = (char*)malloc(size_list * 21);
+    if((code_list = (char*)malloc(size_list * 21)) == NULL)
+    {
+        fprintf(stderr,"Errore durante l'allocazione\n");
+        /* Chiusura del socket file descriptor connesso al server */
+        close(client_file_descriptor);
+        /* Terminiamo con successo il processo client */
+        exit(EXIT_FAILURE);
+    }
 
     if(FullRead(client_file_descriptor, code_list, size_list * 21) > 0)
     {

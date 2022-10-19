@@ -900,7 +900,28 @@ void* assistant_server_handler(void* args)
             PrintClientIPV4(&central_server_address,"Response received from", command_reader_buffer);
             #endif
 
-            codes_list = (char*)malloc(size_codes_list * 21);
+            if((codes_list = (char*)malloc(size_codes_list * 21)) == NULL)
+            {
+                /*
+                 * ==================================
+                 * =         CLOSE  THREAD          =
+                 * ==================================
+                 * */
+                /* Caso in cui il client si sia disconnesso */
+                #ifdef LOG
+                PrintClientIPV4(&central_server_address,"Server disconnected:", NULL);
+                #endif
+
+                free(codes_list);
+                /* Chiusura del socket file descriptor connesso al client */
+                close(administrator_socket);
+                close(connection_file_descriptor);
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
+                pthread_exit(NULL);
+            }
 
             if(FullRead(administrator_socket, codes_list, size_codes_list * 21) > 0)
             {
@@ -913,6 +934,8 @@ void* assistant_server_handler(void* args)
                 #ifdef LOG
                 PrintClientIPV4(&central_server_address,"Server disconnected:", NULL);
                 #endif
+
+                free(codes_list);
                 /* Chiusura del socket file descriptor connesso al client */
                 close(administrator_socket);
                 close(connection_file_descriptor);
@@ -938,6 +961,8 @@ void* assistant_server_handler(void* args)
             #ifdef LOG
             PrintClientIPV4(&client_address,"Response sent to", command_reader_buffer);
             #endif
+
+            free(codes_list);
         }
         else if(!strcmp(command_reader_buffer, "CMD_MOD"))
         {
