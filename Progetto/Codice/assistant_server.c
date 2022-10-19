@@ -10,6 +10,8 @@
 
 int main()
 {
+    /* Rende STDOUT non bufferizzato */
+    (void)setvbuf(stdout, NULL, _IONBF, 0);
     /* ==========================
      * =       VARIABLES        =
      * ==========================
@@ -153,7 +155,7 @@ int main()
         /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
         #ifdef LOG
-        PrintClientIPV4(&client_address, "Connected to");
+        PrintClientIPV4(&client_address, "Connected to", NULL);
         #endif
 
         /*

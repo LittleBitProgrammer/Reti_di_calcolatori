@@ -13,5 +13,6 @@ bool date_valid(int, int, int);
 bool is_leap(int);
 int compare_date(struct tm*, struct tm*);
 struct tm add_month_to_date(struct tm, int);
+char* get_timestamp(void);
 
 #endif // DATA_UTILITY_H

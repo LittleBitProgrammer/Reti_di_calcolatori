@@ -6,6 +6,7 @@
 #include <time.h>
 #include <string.h>
 #include "sockets_utility.h"
+#include "date_utility.h"
 
 /**
  * @brief Funzione che permette la creazione di un file descriptor associato ad una socket
@@ -269,19 +270,18 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
     return n_left;
 }
 
-void PrintClientIPV4(struct sockaddr_in* client_address, char* type_of_request)
+void PrintClientIPV4(struct sockaddr_in* client_address, char* type_of_request, char* command)
 {
     struct hostent *host;
     char buffer[INET6_ADDRSTRLEN];
-    time_t timestamp = time(NULL);
-    char *daytime = ctime(&timestamp);
-
-    daytime[strlen(daytime)-1] = 0;
 
     inet_ntop(AF_INET, &(client_address->sin_addr),buffer,INET6_ADDRSTRLEN);
 
-    /* Stampa informazioni del client */
-    printf("%s - %s host %s, port %d,", daytime, type_of_request, buffer, ntohs(client_address->sin_port));
+    printf("%s%s%s%s - %s host %s, port %d,", get_timestamp(),
+                                                     (command != NULL) ? " (" : "",
+                                                     (command != NULL) ? command : "",
+                                                     (command != NULL) ? ")" : "",
+                                                     type_of_request, buffer, ntohs(client_address->sin_port));
 
     if((host = gethostbyaddr((const char *) &(client_address->sin_addr), sizeof(client_address->sin_addr), client_address->sin_family)) == NULL)
     {

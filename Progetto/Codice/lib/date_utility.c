@@ -146,3 +146,13 @@ struct tm add_month_to_date(struct tm vaccination_date, int months)
 
     return expiration_date;
 }
+
+char* get_timestamp(void)
+{
+    time_t timestamp = time(NULL);
+    char *daytime = ctime(&timestamp);
+
+    daytime[strlen(daytime)-1] = 0;
+
+    return daytime;
+}

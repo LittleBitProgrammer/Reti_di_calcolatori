@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 
     if(FullRead(client_file_descriptor, &size_list, sizeof(int)) > 0)
     {
-        fprintf(stderr,"Errore di lettura\n");
+        fprintf(stderr,"Anomalia durante l'operazione del server\n");
         /* Chiusura del socket file descriptor connesso al server */
         close(client_file_descriptor);
         /* Terminiamo con successo il processo client */

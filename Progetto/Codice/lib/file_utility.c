@@ -15,8 +15,6 @@
  * */
 File_result is_code_written_in_file(char *file_name, char *code)
 {
-    File_result file_errors;
-
     /* Buffer di lettura da file */
     char *line = (char *)malloc(56 * sizeof(char));
     char *tokens;
@@ -27,11 +25,9 @@ File_result is_code_written_in_file(char *file_name, char *code)
     /* Controlliamo se il file è stato aperto correttamente */
     if ((file_codes = fopen(file_name, "r")) == NULL)
     {
-        file_errors.result_flag = 0;
-        file_errors.file_flags.open_file_flag = 1;
-        file_errors.file_flags.write_file_flag = 0;
+        File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 1, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
 
-        fprintf(stderr, "2. Errore nell'apertura del file!\n");
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
         return file_errors;
     }
 
@@ -43,9 +39,7 @@ File_result is_code_written_in_file(char *file_name, char *code)
 
         if(tokens == NULL)
         {
-            file_errors.result_flag = 0;
-            file_errors.file_flags.open_file_flag = 0;
-            file_errors.file_flags.write_file_flag = 0;
+            File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 0, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
 
             /* Deallocazione della memoria */
             free(tokens);
@@ -59,9 +53,8 @@ File_result is_code_written_in_file(char *file_name, char *code)
         tokens[strcspn(tokens, "\n")] = '\0';
         if (!strcmp(tokens, code))
         {
-            file_errors.result_flag = 1;
-            file_errors.file_flags.open_file_flag = 0;
-            file_errors.file_flags.write_file_flag = 0;
+            File_result file_errors = {.result_flag = 1, .file_flags.open_file_flag = 0, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
+
 
             /* Deallocazione della memoria */
             free(tokens);
@@ -70,9 +63,7 @@ File_result is_code_written_in_file(char *file_name, char *code)
         }
     }
 
-    file_errors.result_flag = 0;
-    file_errors.file_flags.open_file_flag = 0;
-    file_errors.file_flags.write_file_flag = 0;
+    File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 0, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
 
     /* Deallocazione della memoria */
     free(line);
@@ -92,39 +83,32 @@ File_result is_code_written_in_file(char *file_name, char *code)
  * */
 File_result subscribe_vaccinated_client(char* vaccinated_client_info)
 {
-    File_result file_errors;
     FILE *vaccinated_file;
 
     if((vaccinated_file = fopen(VACCINATED_FILE_NAME, "a")) == NULL)
     {
-        file_errors.result_flag = 0;
-        file_errors.file_flags.open_file_flag = 1;
-        file_errors.file_flags.write_file_flag = 0;
+        File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 1, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
 
-        fprintf(stderr, "1. Errore nell'apertura del file!\n");
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
         return file_errors;
     }
 
     if(fprintf(vaccinated_file, "%s\n", vaccinated_client_info) < 0)
     {
-        file_errors.result_flag = 0;
-        file_errors.file_flags.open_file_flag = 0;
-        file_errors.file_flags.write_file_flag = 1;
+        File_result file_errors = {.result_flag = 0, .file_flags.open_file_flag = 0, .file_flags.write_file_flag = 1, .file_flags.read_file_flag = 0};
 
-        fprintf(stderr, "Errore in scrittura su File\n");
+
+        fprintf(stderr, "%s - Errore nella scrittura del File\n", get_timestamp());
         fclose(vaccinated_file);
         return file_errors;
     }
-
-    file_errors.result_flag = 1;
-    file_errors.file_flags.open_file_flag = 0;
-    file_errors.file_flags.write_file_flag = 0;
+    File_result file_errors = {.result_flag = 1, .file_flags.open_file_flag = 0, .file_flags.write_file_flag = 0, .file_flags.read_file_flag = 0};
 
     fclose(vaccinated_file);
     return file_errors;
 }
 
-int count_file_lines(char* file_name, char** list_codes)
+int read_lines(char* file_name, char** list_codes)
 {
     FILE* file_point;
     int line_counter;
@@ -134,7 +118,7 @@ int count_file_lines(char* file_name, char** list_codes)
 
     if((file_point = fopen(file_name, "r")) == NULL)
     {
-        fprintf(stderr, "Errore in apertura del file");
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
         return -1;
     }
 
@@ -180,10 +164,10 @@ bool change_information_in_file(Administrator_request_package* update_package, A
 
     if((file_point = fopen(file_name, "r+")) == NULL)
     {
-        fprintf(stderr, "Errore in apertura del file");
-        administrator_response->reviser_package.file_flags.open_file_flag = 1;
-        administrator_response->reviser_package.file_flags.write_file_flag = 0;
-        administrator_response->reviser_package.file_flags.read_file_flag = 0;
+        File_flags file_errors = {.open_file_flag = 1, .write_file_flag = 0, .read_file_flag = 0};
+        administrator_response->reviser_package.file_flags = file_errors;
+
+        fprintf(stderr, "%s - Errore nell'apertura del File\n", get_timestamp());
         return FALSE;
     }
 
