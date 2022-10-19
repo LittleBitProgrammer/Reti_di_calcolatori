@@ -156,7 +156,7 @@ int main()
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
 
         #ifdef LOG
-        PrintClientIPV4(&client_address, "Connected to", NULL);
+        LogHostIPV4(&client_address, "Connected to", NULL);
         #endif
 
         /*

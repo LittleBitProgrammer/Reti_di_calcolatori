@@ -87,6 +87,6 @@ size_t FullRead(int, void*, size_t);
  * */
 size_t FullWrite(int, void*, size_t);
 
-void PrintClientIPV4(struct sockaddr_in*, char*, char*);
+void LogHostIPV4(struct sockaddr_in *client_address, char *type_of_request, char *command);
 
 #endif // SOCKETS_UTILITY_H

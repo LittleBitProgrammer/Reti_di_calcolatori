@@ -270,7 +270,7 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
     return n_left;
 }
 
-void PrintClientIPV4(struct sockaddr_in* client_address, char* type_of_request, char* command)
+void LogHostIPV4(struct sockaddr_in* client_address, char* type_of_request, char* command)
 {
     struct hostent *host;
     char buffer[INET6_ADDRSTRLEN];
