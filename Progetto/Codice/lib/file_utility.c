@@ -122,7 +122,7 @@ File_result subscribe_vaccinated_client(char* vaccinated_client_info)
 int read_lines(char* file_name, char** list_codes)
 {
     FILE* file_point;
-    int line_counter;
+    int line_counter = 0;
     int read_character;
     char buffer[21];
     int counter = 0;
@@ -175,18 +175,9 @@ bool change_information_in_file(Administrator_request_package* update_package, A
     FILE* file_point;
     int count_lines = 0;
     long position_cursor;
-    char* overwrite_string = (char*) malloc(MAX_FILE_LINE_SIZE);
+    char overwrite_string[MAX_FILE_LINE_SIZE];
     time_t daytime;
     struct tm* local_time;
-
-    if(overwrite_string == NULL)
-    {
-        File_flags file_errors = {.open_file_flag = 0, .write_file_flag = 1, .read_file_flag = 0};
-        administrator_response->reviser_package.file_flags = file_errors;
-
-        fprintf(stderr, "Errore durante l'allocazione\n");
-        return FALSE;
-    }
 
     if((file_point = fopen(file_name, "r+")) == NULL)
     {
@@ -195,6 +186,7 @@ bool change_information_in_file(Administrator_request_package* update_package, A
         administrator_response->reviser_package.file_flags = file_errors;
 
         fprintf(stderr, "%s - Errore nell'apertura del File\n", (time_stamp != NULL) ? time_stamp : "/");
+
         return FALSE;
     }
 
@@ -203,12 +195,15 @@ bool change_information_in_file(Administrator_request_package* update_package, A
     {
         File_flags file_errors = {.open_file_flag = 0, .write_file_flag = 1, .read_file_flag = 0};
         administrator_response->reviser_package.file_flags = file_errors;
+
+        fclose(file_point);
         return FALSE;
     }
 
     if (strlen(overwrite_string) < MAX_FILE_LINE_SIZE - 1)
     {
         memset(overwrite_string, 32, MAX_FILE_LINE_SIZE - 1);
+        overwrite_string[MAX_FILE_LINE_SIZE-1] = 0;
     }
 
     while(count_lines != update_package->index_list)

@@ -3,6 +3,7 @@
 #include <string.h>             /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
 #include <time.h>               /* Importata per utilizzare la funzione "@time()" */
 #include <unistd.h>             /* Importata per utilizzare la funzione "@close() */
+#include <sys/syscall.h>
 #include "sockets_utility.h"    /* Importata per utilizzare le funzioni:
                                         1. "@FullRead()"
                                         2. "@FullWrite()"
@@ -16,6 +17,19 @@
 #include "green_pass_utility.h"
 
 #define LOG TRUE
+#include <unistd.h>
+#include <sys/syscall.h>
+
+#ifndef SYS_gettid
+#error "SYS_gettid unavailable on this system"
+#endif
+
+#define gettid() ((pid_t)syscall(SYS_gettid))
+
+bool is_main_thread(void)
+{
+    return getpid() == gettid();
+}
 
 /**
  * @brief
