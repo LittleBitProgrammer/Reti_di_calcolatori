@@ -101,7 +101,7 @@ bool run_administrator_menu(Administrator_request_package* administrator_package
 
     if(index_motivation_choice < 1 || index_motivation_choice > 2)
     {
-        fprintf(stderr, "Scelta selezionata errata");
+        fprintf(stderr, "Scelta selezionata errata\n");
         return FALSE;
     }
 
