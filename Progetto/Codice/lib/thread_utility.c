@@ -264,7 +264,6 @@ void* vaccination_center_handler(void* args)
             {
                 close(subscription_socket);
 
-                is_card_code_written.result_flag = !is_card_code_written.result_flag;
                 FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(File_result));
                 #ifdef LOG
                 LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
@@ -305,7 +304,7 @@ void* vaccination_center_handler(void* args)
 
                 FullWrite(connection_file_descriptor, &is_subscribed, sizeof(File_result));
                 #ifdef LOG
-                LogHostIPV4(&client_address, "Request sent to", command_reader_buffer);
+                LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
                 #endif
             }
             else
@@ -315,7 +314,7 @@ void* vaccination_center_handler(void* args)
                 is_card_code_written.result_flag = !is_card_code_written.result_flag;
                 FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(File_result));
                 #ifdef LOG
-                LogHostIPV4(&client_address, "Request sent to", command_reader_buffer);
+                LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
                 #endif
             }
         }
@@ -454,25 +453,6 @@ void* central_server_handler(void* args)
             #ifdef LOG
             LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
             #endif
-            if(!is_subscribed.result_flag)
-            {
-                fprintf(stderr, "Errore durante l'inserimento a file del vaccinato\n");
-                close(connection_file_descriptor);
-                /*
-                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
-                 * reperire l'informazione relativa al prossimo thread disponibile
-                 * */
-                pthread_exit(NULL);
-            }
-            else
-            {
-                close(connection_file_descriptor);
-                /*
-                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
-                 * reperire l'informazione relativa al prossimo thread disponibile
-                 * */
-                pthread_exit(NULL);
-            }
         }
         else if(!strcmp(command_reader_buffer, "CMD_REV"))
         {
