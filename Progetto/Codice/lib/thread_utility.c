@@ -17,8 +17,6 @@
 #include "green_pass_utility.h"
 
 #define LOG TRUE
-#include <unistd.h>
-#include <sys/syscall.h>
 
 #ifndef SYS_gettid
 #error "SYS_gettid unavailable on this system"
