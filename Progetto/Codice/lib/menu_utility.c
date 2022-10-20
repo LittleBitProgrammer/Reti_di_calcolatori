@@ -30,12 +30,7 @@ bool run_vaccinated_menu(struct tm* vaccination_date, struct tm* local_daytime, 
 
     fscanf(stdin, "%s", verification_code);
 
-    if(!verify_card_code(verification_code))
-    {
-        return FALSE;
-    }
-
-    return TRUE;
+    return (verify_card_code(verification_code) && accept_terms());
 }
 
 /**
@@ -173,4 +168,22 @@ void print_code_list(char* code_list, int size)
     print_menu_divider(45);
 
     printf("\n");
+}
+
+bool accept_terms()
+{
+    int accepted_terms;
+    printf("Accettare il trattamento dei dati:\n");
+    printf("1. Accetto\n");
+    printf("2. Non Accetto\n");
+    printf(">");
+
+    scanf("%d", &accepted_terms);
+
+    if(accepted_terms < 1 || accepted_terms >= 2)
+    {
+        fprintf(stderr, "Termini e condizioni necessari per continuare ad utilizzare il software!\n");
+        return FALSE;
+    }
+    return (accepted_terms == 1) ? TRUE : FALSE;
 }
