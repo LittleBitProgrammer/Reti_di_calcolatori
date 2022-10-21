@@ -19,7 +19,8 @@
 #include <time.h>
 #include <netinet/in.h>
 #include "bool_utility.h"
-#include "code_verification.h"
+
+#define MAX_CODE_LEN 21
 
 /* 
  * ================================
@@ -148,7 +149,7 @@ typedef struct
 typedef struct
 {
     bool not_updatable;
-    char code[21];
+    char code[MAX_CODE_LEN];
     Reviser_package reviser_package;
 } Administrator_response_package;
 

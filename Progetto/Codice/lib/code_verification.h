@@ -4,8 +4,6 @@
 #include "bool_utility.h"
 #include "package_utility.h"
 
-#define MAX_CODE_LEN 21
-
 bool verify_card_code(char*);
 File_result check_region_code(char*);
 

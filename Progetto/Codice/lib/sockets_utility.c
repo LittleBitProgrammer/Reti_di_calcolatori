@@ -17,7 +17,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <netdb.h>
 #include <string.h>
 #include "sockets_utility.h"
 #include "date_utility.h"
