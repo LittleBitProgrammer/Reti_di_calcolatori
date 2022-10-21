@@ -1,31 +1,67 @@
-#include <stdio.h>                /* Importata per utilizzare la funzione "@perror()" */
-#include <stdlib.h>               /* Importata per utilizzare la funzione "@exit()" */
-#include <errno.h>                /* Importata per utilizzare la variabile globale "@errno" */
-#include <string.h>               /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
-#include <netinet/in.h>           /* Importata per utilizzare la struttura "@sockaddr_in" */
-#include "lib/thread_utility.h"   /* Importata per utilizzare costanti e funzioni legate alla tecnologia thread */
-#include "lib/sockets_utility.h"  /* Importata per utilizzare funzioni wrapper per la gestione dei socket */
+/**
+ * @file vaccination_center_server.c
+ * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
+ * @brief   Il seguente programma ha lo scopo di realizzare un server centro vaccinale, il quale avrà lo scopo di calcolare il daytime per servire il 
+ *          client "vaccinato" e di calcolare e comunicare la data di scadenza del "Green pass" una volta ricevute le informazione dal client.
+ * 
+ * @type    Eseguibile
+ * @version 1.0
+ */
 
-#define LOG TRUE
+/* 
+ * ==========================
+ * =         Import         =
+ * ==========================
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#include <netinet/in.h>
+#include "lib/thread_utility.h"
+#include "lib/sockets_utility.h"
 
+/* 
+ * ==========================
+ * =       Constants        =
+ * ==========================
+ */
+#define LOG TRUE                /* I server implementati nel progetto fornito, sono stati ingegnerizzati per effettuare dei log di sistema ad ogni azione di rilievo eseguita. La costante LOG
+                                   è stata definita in quanto permette alle direttive precompilatore, implementate nel codice di esecuzione, di attivare le stampe a video */
+#define SERVER_PORT 6462        /* Definiamo come costante la porta del server "centro vaccinale" in ascolto ed in attesa di accettare nuove connessioni */
+
+/* Punto di accesso per un qualsiasi programma eseguibile */
 int main()
 {
-    /* Rende STDOUT non bufferizzato */
+    /* Attraverso la seguente istruzione rendiamo lo standard output non bufferizzato, in modo da permettere ai log del server di essere stampati a video */
     (void)setvbuf(stdout, NULL, _IONBF, 0);
+
     /* ==========================
      * =       VARIABLES        =
      * ==========================
      * */
     int                listen_file_descriptor;                   /* File descriptor del socket in ascolto sul server */
+
     int                connection_file_descriptor;               /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+    
     int                is_address_reusable = 1;                  /* Valore intero che permette di configurare il server per il riutilizzo di un indirizzo
                                                                   * su cui è già stata effettuata la "@bind()" */
+
     struct sockaddr_in server_address;                           /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del server */
+
     struct sockaddr_in client_address;                           /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del client */
+
     socklen_t          client_size = sizeof(client_address);     /* Grandezza espressa in termini di byte dell'Endpoint client */
+
     int                i = 0;                                    /* Variabile utilizzata da indice per i costrutti iterativi */
+
     pthread_t          threads_id[MAX_THREADS];                  /* Array contenente i descrittori dei threads utilizzati dal server */
-    Args               thread_arguments;
+
+    Args               thread_arguments;                         /* Struttura definita per permettere alla funzione handler del thread, di accettare in input molteplici argomenti.
+                                                                    In particolare, sarà composta da una strttura @sockaddr_in per permettere alla funzione handler di eseguire i 
+                                                                    log delle istruzioni rilevanti eseguite. Inoltre viene utilizzato il campo @file_descriptor, in quanto ci
+                                                                    permetterà di eseguire operazioni di comunicazione sul socket dal thread creato, aperto durante l'accept 
+                                                                    del server */
 
     /* ==========================
      * =    SOCKET CREATION     =
@@ -33,8 +69,8 @@ int main()
      * */
 
     /*
-     * Inizializziamo il valore del file descriptor, che verrà configurato in modalità ascolto, sfruttando la funzione definita
-     * nella libreria "@sockets_utilities.h". In questo modo, associamo il file descriptor a una socket
+     * Inizializziamo il valore del file descriptor, il quale verrà configurato in modalità ascolto, sfruttando la funzione definita
+     * nella libreria "@sockets_utility.h". In questo modo, associamo il file descriptor a una socket
      * */
     listen_file_descriptor = SocketIPV4();
 
@@ -98,7 +134,7 @@ int main()
      *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
      * Per il progetto si è deciso di utilizzare una porta registrata "6463"
      * */
-    server_address.sin_port = htons(6462);
+    server_address.sin_port = htons(SERVER_PORT);
 
     /*
      * ==================================
@@ -110,8 +146,8 @@ int main()
      * La funzione "@setsockopt" ci permette di configurare l'opzione specificata dal parametro "@option_name" (il terzo argomento) al livello protocollo
      * specificato dall'argomento "@level" (secondo argomento) al valore puntato dall'argomento "@option_value" (quarto argomento) per il socket
      * associato con il file descriptor specificato dall'argomento "@socket" (primo argomento).
-     * In particolare, attraverso la seguente funzione stiamo configurando al livello socket che il server in questione dovrà riutilizzare l'indirizzo
-     * locale durante una nuova esecuzione del processo server
+     * In particolare, attraverso la seguente funzione stiamo configurando, a livello socket, il server per riutilizzare l'indirizzo locale durante una nuova
+     * esecuzione del processo
      * */
     setsockopt(listen_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &is_address_reusable, sizeof(is_address_reusable));
 
@@ -152,10 +188,12 @@ int main()
          * =================================
          * */
 
-        /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
+        /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client che esegue richiesta di connessione */
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
 
+        /* Le direttive precompilatore utilizzate nell'implementazione dei server, vengono utilizzate per attivare e disattivare i log dei processi server. */
         #ifdef LOG
+        /* Stampa della connesione con il client */
         LogHostIPV4(&client_address, "Connected to", NULL);
         #endif
 

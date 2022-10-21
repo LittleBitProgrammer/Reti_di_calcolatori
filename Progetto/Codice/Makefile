@@ -13,7 +13,6 @@ build_central_server:
 	gcc central_server.c \
 		lib/sockets_utility.c \
 		lib/thread_utility.c \
-		lib/bool_utility.c \
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
@@ -24,7 +23,6 @@ build_assistant_server:
 	gcc assistant_server.c \
 		lib/sockets_utility.c \
 		lib/thread_utility.c \
-		lib/bool_utility.c \
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
@@ -35,7 +33,6 @@ build_vaccinated_server:
 	gcc vaccination_center_server.c \
 		lib/thread_utility.c \
 		lib/sockets_utility.c \
-		lib/bool_utility.c \
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
@@ -47,12 +44,10 @@ build_vaccinated_client:
 		lib/sockets_utility.c \
 		lib/menu_utility.c \
 		lib/date_utility.c \
-		lib/bool_utility.c \
 		lib/code_verification.c \
 		lib/digits_utility.c \
 		lib/file_utility.c \
 		lib/buffer_utility.c \
-		lib/package_utility.c \
 		lib/green_pass_utility.c \
 		lib/thread_utility.c \
 		-o ./output/client_vaccinale
@@ -64,12 +59,10 @@ build_reviser_client:
 		lib/sockets_utility.c \
 		lib/menu_utility.c \
 		lib/date_utility.c \
-		lib/bool_utility.c \
 		lib/code_verification.c \
 		lib/digits_utility.c \
 		lib/file_utility.c \
 		lib/buffer_utility.c \
-		lib/package_utility.c \
 		lib/green_pass_utility.c \
 		lib/thread_utility.c \
 		-o ./output/client_reviser
@@ -80,12 +73,10 @@ build_administrator_client:
 		lib/sockets_utility.c \
 		lib/menu_utility.c \
 		lib/date_utility.c \
-		lib/bool_utility.c \
 		lib/code_verification.c \
 		lib/digits_utility.c \
 		lib/file_utility.c \
 		lib/buffer_utility.c \
-		lib/package_utility.c \
 		lib/green_pass_utility.c \
 		lib/thread_utility.c \
 		-o output/client_administrator

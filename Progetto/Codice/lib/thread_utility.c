@@ -1,39 +1,86 @@
-#include <stdio.h>              /* Importata per utilizzare la funzione "@snprintf()" */
+/**
+ * @file    thread_utility.c
+ * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
+ * @brief   I server sono stati ingegnerizzati ed implementati sfruttando la logica dei thread. Tale scelta è stata presa, prendendo in considerazione la sicurezza del servizio
+ *          offerto, in quanto, senza thread un client malintenzionato potrebbe comunicare uno stream di byte che comporterebbe il blocco del server e la conseguente 
+ *          interruzione del servizio. Invece, attraverso l'utilizzo dei thread, un client malintenzionato potrebbe bloccare l'esecuzione di un thread, permettendo agli altri 
+ *          client di essere serviti in qualsiasi caso. In tale libreria si è proceduto con il definire il set di istruzioni che ogni server deve eseguire in corrispondenza
+ *          della creazione di un thread quando una nuova connessione viene accettata. Pertanto, vengono definite le funzioni handler di ogni server.
+ * 
+ * @type    Implementazione libreria @thread_utility.h
+ * @version 1.0
+ */
+
+/* 
+ * ==========================
+ * =         Import         =
+ * ==========================
+ */
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>             /* Importata per utilizzare la funzione di azzeramento dei byte di un array "@bzero()" */
-#include <time.h>               /* Importata per utilizzare la funzione "@time()" */
-#include <unistd.h>             /* Importata per utilizzare la funzione "@close() */
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include <sys/syscall.h>
-#include "sockets_utility.h"    /* Importata per utilizzare le funzioni:
-                                        1. "@FullRead()"
-                                        2. "@FullWrite()"
-                                   E le costanti:
-                                        1. CMD_BUFFER_LEN
-                                */
+#include "sockets_utility.h"
 #include "thread_utility.h"
 #include "package_utility.h"
 #include "file_utility.h"
 #include "date_utility.h"
 #include "green_pass_utility.h"
 
-#define LOG TRUE
+/* 
+ * ==========================
+ * =       Constants        =
+ * ==========================
+ */
+#define LOG TRUE /* I server implementati nel progetto fornito, sono stati ingegnerizzati per effettuare dei log di sistema ad ogni azione di rilievo eseguita. La costante LOG
+                    è stata definita in quanto permette alle direttive precompilatore, implementate nel codice di esecuzione, di attivare le stampe a video */
 
+/* 
+ * ==========================
+ * =          Macro         =
+ * ==========================
+ */
+
+/* 
+ * La seguente direttiva precompilatore è utile a vericare la presenza della macro @SYS_gettid, utilizzata nella macro per definire @gettid(). In particolare, se quest'ultima
+ * non è presente nel sistema operativvo di compilazione, verrà lanciato un errore con la stampa corrispondente alla stringa inserita 
+*/
 #ifndef SYS_gettid
 #error "SYS_gettid unavailable on this system"
 #endif
 
+/* 
+ * Macro volta a definire un'operazione di reperimento dell'id thread in esecuzione, attraverso la chiamata di sistema @syscall(), la quale accetterà in input la macro 
+ * @SYS_gettid */
 #define gettid() ((pid_t)syscall(SYS_gettid))
 
+/**
+ * @brief  Le funzioni di creazione socket, connessione, scrittura e lettura su socket possono avvenire sul thread master, oppure, su un thread differente. Pertanto si è deciso 
+ *         di rendere tali funzioni thread safe, attraverso la seguente funzione, il quale ci permetterà di comprendere se la funzione viene eseguita sul thread principale oppure 
+ *         su un thread secondario, prevedendo un set di istruzioni divverso in base all'ambiente di esecuzione.
+ * 
+ * @return true - il processo è in esecuzione sul thread master
+ * @return false - il processo non è in esecuzione sul thread master
+ */
 bool is_main_thread(void)
 {
+    /* Se il process id è uguale al thread id, allora il processo sarà in esecuzione sul thread master */
     return getpid() == gettid();
 }
 
 /**
- * @brief
- *
- * @param args
- * */
+ * @brief Funzione handler per gestire il set di istruzioni da eseguire alla creazione del thread, successivamente all'@Accept() del server "centro vaccinale". Il server 
+ *        in questione è stato ingegnerizzato ed implementato, per gestire molteplici tipologie di richieste. In particolare, vengono utilizzati dei comandi per permettere
+ *        al server di interpretare la tipologia di richiesta ed eseguire un set predefinito di istruzioni. Di seguito viene mostrato l'elenco di comandi e le corrispettive 
+ *        funzionalità:
+ * 
+ *        - CMD_DTM: Richiesta ricevuta dal client "vaccinato" per richiedere un daytime locale del server
+ *        - CMD_SUB: Richiesta ricevuta dal client "vaccinato" per effettuare l'iscrizione di uno specifico utente al sistema "Green Pass"
+ * 
+ * @return void* - tutte le funzioni handler hanno un particolare tipo di sintassi, tra cui un tipo di ritorno specificato come puntatore a void
+ */
 void* vaccination_center_handler(void* args)
 {
     /* Rende STDOUT non bufferizzato */
@@ -321,6 +368,20 @@ void* vaccination_center_handler(void* args)
     }
 }
 
+/**
+ * @brief Funzione handler per gestire il set di istruzioni da eseguire alla creazione del thread, successivamente all'@Accept() del server "centrale". Il server 
+ *        in questione è stato ingegnerizzato ed implementato, per gestire molteplici tipologie di richieste. In particolare, vengono utilizzati dei comandi per permettere
+ *        al server di interpretare le tipologie di richieste ed eseguire un set predefinito di istruzioni. Di seguito viene mostrato l'elenco di comandi e le corrispettive 
+ *        funzionalità:
+ * 
+ *        - CMD_CTR: Richiesta ricevuta dal server "centro vaccinale" per verificare l'esistenza dell'utente sul file di memorizzazione
+ *        - CMD_MEM: Richiesta ricevuta dal server "centro vaccinale" per effettuare la memorizzazione dell'utente vaccinato sul file
+ *        - CMD_REV: Richiesta ricevuta dal server "assistente" qper fornire le informazioni del "Green pass" di uno specifico utente
+ *        - CMD_LST: Richiesta ricevuta dal server "assistente" per fornire la lista degli utenti iscritti alla piattaforma "Green pass"
+ *        - CMD_MOD: Richiesta ricevuta dal server "assistente" per modificare alcune informazioni inerenti ad uno specifico utente iscritto alla piattaforma "Green pass"
+ * 
+ * @return void* - tutte le funzioni handler hanno un particolare tipo di sintassi, tra cui un tipo di ritorno specificato come puntatore a void
+ */
 void* central_server_handler(void* args)
 {
     /* Rende STDOUT non bufferizzato */
@@ -586,6 +647,18 @@ void* central_server_handler(void* args)
     }
 }
 
+/**
+ * @brief Funzione handler per gestire il set di istruzioni da eseguire alla creazione del thread, successivamente all'@Accept() del server "assistente". Il server 
+ *        in questione è stato ingegnerizzato ed implementato, per gestire molteplici tipologie di richieste. In particolare, vengono utilizzati dei comandi per permettere
+ *        al server di interpretare la tipologia di richiesta ed eseguire un set predefinito di istruzioni. Di seguito viene mostrato l'elenco di comandi e le corrispettive 
+ *        funzionalità:
+ * 
+ *        - CMD_REV: Richiesta ricevuta per fornire le informazioni del "Green pass" di uno specifico utente
+ *        - CMD_LST: Richiesta ricevuta per fornire la lista degli utenti iscritti alla piattaforma "Green pass"
+ *        - CMD_MOD: Richiesta ricevuta per modificare alcune informazioni inerenti ad uno specifico utente iscritto alla piattaforma "Green pass"
+ * 
+ * @return void* - tutte le funzioni handler hanno un particolare tipo di sintassi, tra cui un tipo di ritorno specificato come puntatore a void
+ */
 void* assistant_server_handler(void* args)
 {
     /* Rende STDOUT non bufferizzato */
