@@ -34,7 +34,7 @@
  * @return File_result struttura contenente informazioni relative agli errori di apertura, lettura e scrittura sul file, con l'aggiunta di un valore booleano che ha lo scopo
  *         di interpretare la presenza di una determinata stringa in un file.
  */
-File_result is_code_written_in_file(char *file_name, char *code)
+File_result is_code_written_in_file(char *file_name, char *code, int buffer_size)
 {
     /* Buffer di lettura da file */
     char* line = (char *)malloc(56 * sizeof(char));

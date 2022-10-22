@@ -33,7 +33,7 @@
  * =     Function Definition      =
  * ================================
  */
-File_result is_code_written_in_file(char*, char*);
+File_result is_code_written_in_file(char*, char*, int);
 File_result subscribe_vaccinated_client(char*);
 int read_lines(char*, char**);
 bool change_information_in_file(Administrator_request_package*, Administrator_response_package*, char*);

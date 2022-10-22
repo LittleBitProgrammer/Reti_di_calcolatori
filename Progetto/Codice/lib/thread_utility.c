@@ -496,7 +496,7 @@ void* central_server_handler(void* args)
             #ifdef LOG
             LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
-            is_card_code_written = is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer);
+            is_card_code_written = is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer, MAX_FILE_LINE_SIZE);
             FullWrite(connection_file_descriptor, &is_card_code_written, sizeof(File_result));
             #ifdef LOG
             LogHostIPV4(&client_address, "Response sent to", command_reader_buffer);
@@ -575,7 +575,7 @@ void* central_server_handler(void* args)
             #ifdef LOG
             LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
-            if(is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer).result_flag)
+            if(is_code_written_in_file(VACCINATED_FILE_NAME, reader_buffer, MAX_FILE_LINE_SIZE).result_flag)
             {
                 if(generate_reviser_response(&reviser_package, reader_buffer) != NULL)
                 {

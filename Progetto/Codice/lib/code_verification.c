@@ -119,5 +119,5 @@ File_result check_region_code(char *code)
     *(sub_code + 5) = '\0';
 
     /* Verifichiamo che il codice regione ricavato sia presente all'interno del file @../file/client/tessera_sanitaria_codice_regione */
-    return is_code_written_in_file(REGION_FILE_NAME, sub_code);
+    return is_code_written_in_file(REGION_FILE_NAME, sub_code, sizeof(sub_code));
 }
