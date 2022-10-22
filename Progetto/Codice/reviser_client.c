@@ -1,3 +1,18 @@
+/**
+ * @file    reviser_client.c
+ * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
+ * @brief   Il seguente programma ha lo scopo di realizzare un client, volto a permettere, ad un utente (una volta effettuata la vaccinazione), di collegarsi 
+ *          ad un server, "assistente" e di richiedere le informazioni sul documento "Green Pass". 
+ * 
+ * @type    Eseguibile
+ * @version 1.0
+ */
+
+/* 
+ * ==========================
+ * =         Import         =
+ * ==========================
+ */
 #include <stdio.h>
 #include <netdb.h>
 #include <stdlib.h>
@@ -7,7 +22,16 @@
 #include "lib/menu_utility.h"
 #include "lib/package_utility.h"
 
-int main(int argc, char **argv)
+/* 
+ * ==========================
+ * =       Constants        =
+ * ==========================
+ */
+#define IP_ADDRESS "localhost" /* Il client "revisore" ha lo scopo di collegarsi ad un server "assistente" e non ad altri server. Pertanto, attraverso la seguente
+                                  costante, andiamo a definire l'indirizzo IP del server con cui andremo a connetterci */
+#define SERVER_PORT 6465       /* Definiamo come costante la porta del server "assistente" in ascolto ed in attesa di accettare nuove connessioni */
+
+int main()
 {
     /* ==========================
      * =       Variables        =
@@ -15,32 +39,23 @@ int main(int argc, char **argv)
      */
 
     int                client_file_descriptor;
+
     struct sockaddr_in server_address;
+
     struct hostent*    server_dns;
+
     char               command_writer_buffer[CMD_BUFFER_LEN];
+
     char               writer_buffer[21];
+
     Reviser_package    reviser_package;
-
-    /*
-    * ==========================
-    * =       Arguments        =
-    * ==========================
-    * */
-
-    /*
-     * Attraverso il seguente costrutto di controllo si va a controllare che sia stato inserito un numero di argomenti pari ad 1,
-     * in quanto anche il comando digitato su linea di comando viene contato come argomento
-     * */
-    if(argc != 2)
-    {
-        fprintf(stderr, "Client usage: %s <IP ADDRESS>\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
 
     /* ==========================
      * =    ZEROING  ARRAYS     =
      * ==========================
      * */
+
+    /* Azzeriamo i byte che compongono i seguenti array per evitare di avere valori raw all'interno di quest'ultimo */
     bzero(command_writer_buffer, CMD_BUFFER_LEN);
     bzero(writer_buffer, 21);
 
@@ -55,7 +70,7 @@ int main(int argc, char **argv)
      * Inoltre, se la funzione non è andata a buon fine, allora verrà ritornato un puntatore a "@NULL" e assegnato il numero dell'errore alla
      * variabile "@h_errno" intercettata successivamente dal "@herror()"
      * */
-    if((server_dns = gethostbyname(argv[1])) == NULL)
+    if((server_dns = gethostbyname(IP_ADDRESS)) == NULL)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
         herror("DNS error: ");
@@ -112,13 +127,15 @@ int main(int argc, char **argv)
      *      - da 49152 a 65535, porte effimere, per i client, ai quali non interessa scegliere una porta specifica.
      * Per il progetto si è deciso di utilizzare una porta registrata "6463"
      * */
-    server_address.sin_port = htons(6465);
+    server_address.sin_port = htons(SERVER_PORT);
 
     /*
      * ====================
      * =       MENU       =
      * ====================
      * */
+
+    /* Eseguiamo il menu del client vaccinato, la cui funzione @run_reviser_menu si occuperà di popolare il parametro di output @writer_buffer */
     if(!run_reviser_menu(writer_buffer))
     {
         /* Chiusura del socket file descriptor connesso al server */
@@ -142,7 +159,12 @@ int main(int argc, char **argv)
      * ==================================
      * */
 
+    /* Prepariamo il comando da inviare al Server "Centrale" */
     strcpy(command_writer_buffer, "CMD_REV");
+
+    /*                               CMD_REV
+     * |Client revisore|----------------------------------->|Server Assistente|
+     */
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
 
     /*
@@ -151,7 +173,14 @@ int main(int argc, char **argv)
      * ==================================
      * */
 
+    /*                             card_code[21]
+     * |Client revisore|----------------------------------->|Server Assistente|
+     */
     FullWrite(client_file_descriptor, writer_buffer, 21);
+
+    /*                             Reviser_package
+     * |client revisore|<----------------------------------|Server assistente|
+     */
     if(FullRead(client_file_descriptor, &reviser_package, sizeof(reviser_package)) > 0)
     {
         /* Chiusura del socket file descriptor connesso al server */
@@ -160,21 +189,27 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    /* Stampiamo i risultati dell'operazione di reperimento delle informazioni relative al documento "Green Pass" */
     if(reviser_package.file_flags.open_file_flag || reviser_package.file_flags.write_file_flag)
     {
+        /* Caso di errore sul server centrale durante l'operazione di apertura o scrittura su file */
         fprintf(stderr,"Anomalia durante l'operazione del server\n");
     }
     else if(reviser_package.file_flags.read_file_flag)
     {
+        /* Caso di errore sul server centrale durante l'operazione di lettura su file */
         fprintf(stderr, "Codice tessera sanitaria non esistente\n");
     }
     else
     {
+        /* Caso informazioni utente recuperate con successo */
+
+        /* Stampiamo le informazioni ottenute dal server centrale */
         printf("\nInformazioni:\n\n");
         output_user_information(&reviser_package, 46);
     }
 
-    /* Chiusura del socket file descriptor connesso al server */
+    /* Chiusura del socket file descriptor connesso al server assistente */
     close(client_file_descriptor);
     /* Terminiamo con successo il processo client */
     exit(EXIT_SUCCESS);

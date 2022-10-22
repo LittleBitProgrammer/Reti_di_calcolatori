@@ -204,6 +204,10 @@ int main()
      * libreria @string.h */
     strcpy(command_writer_buffer, "CMD_DTM");
 
+    /*                                CMD_DTM
+     * |Client vaccinato|--------------------------------->|Server centro vaccianle|
+     */
+
     /* Effettuiamo una richiesta daytime comunicando al server "centro vaccinale", attraverso una @FullWrite, il comando specificandone la tipologia (CMD_DTM) */
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
 
@@ -213,6 +217,10 @@ int main()
      * ==================================
      * */
 
+    /*                                Daytime
+     * |Client vaccinato|<----------------------------------|Server centro vaccinale|
+     */
+
     /* Eseguiamo una "@FullRead()" per ottenere una response Daytime dal server connesso */
     if(FullRead(client_file_descriptor, server_daytime, sizeof(*server_daytime)) < 0)
     {
@@ -220,7 +228,7 @@ int main()
 
         fprintf(stderr, "Server disconnesso\n");
 
-        /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
+        /* Liberiamcharo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
         free(server_daytime);
         free(client_daytime);
         free(verification_code);
@@ -260,13 +268,23 @@ int main()
     /* Copiamo la stringa "CMD_SUB" all'interno dell'array di caratteri "@command_writer_buffer" */
     strcpy(command_writer_buffer, "CMD_SUB");
 
+    /*                                CMD_SUB
+     * |Client vaccinato|----------------------------------->|Server centro vaccinale|
+     */
+
     /* Effettuiamo una richiesta al server con le informazioni contenute nel "@command_writer_buffer" */
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
+
+    /*                              Vaccinated_package
+     * |Client vaccinato|----------------------------------->|Server centro vaccinale|
+     */
 
     /* Effettuiamo una richiesta di iscrizione al server con le informazioni contenute nel @vaccinated_request_package */
     FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
 
-    /*  */
+    /*                               File_result
+     * |Client vaccinato|<---------------------------------|Server centro vaccinale|
+     */
     if(FullRead(client_file_descriptor, &is_green_pass_obtained, sizeof(File_result)) > 0)
     {
         /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
@@ -279,16 +297,20 @@ int main()
         exit(EXIT_FAILURE);
     }
 
+    /* Stampiamo i risultati dell'operazione di iscrizione alla piattaforma "Green Pass" */
     if(is_green_pass_obtained.file_flags.write_file_flag || is_green_pass_obtained.file_flags.open_file_flag)
     {
+        /* Caso di errore di scrittura o apertura file nel server centrale */
         fprintf(stderr,"Anomalia durante l'operazione del server\n");
     }
     else if(is_green_pass_obtained.result_flag)
     {
+        /* Caso di avvenuta iscrizione alla piattaforma "Green Pass"*/
         printf("Caricato con successo\n");
     }
     else
     {
+        /* Caso di iscrizione alla piattaforma "Green Pass" fallita in quanto l'utente è già presente */
         fprintf(stderr,"Errore nel caricamento\n");
     }
 
@@ -296,6 +318,7 @@ int main()
     free(server_daytime);
     free(client_daytime);
     free(verification_code);
+
     /* Chiusura del socket file descriptor connesso al server */
     close(client_file_descriptor);
     /* Terminiamo con successo il processo client */

@@ -1,31 +1,60 @@
+/**
+ * @file    central_server.c
+ * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
+ * @brief   Il seguente programma ha lo scopo di realizzare un server "assistente", il quale avrà lo scopo di gestire le richieste dei client "revisore" ed "amministratore"
+ * 
+ * @type    Eseguibile
+ * @version 1.0
+ */
+
+/* 
+ * ==========================
+ * =         Import         =
+ * ==========================
+ */
 #include <stdio.h>
-#include <netinet/in.h>           /* Importata per utilizzare la struttura "@sockaddr_in" */
+#include <netinet/in.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "lib/thread_utility.h"
 #include "lib/sockets_utility.h"
 
-#define LOG TRUE
+#define LOG TRUE         /* I server implementati nel progetto fornito, sono stati ingegnerizzati per effettuare dei log di sistema ad ogni azione di rilievo eseguita. La costante LOG
+                            è stata definita in quanto permette alle direttive precompilatore, implementate nel codice di esecuzione, di attivare le stampe a video */
+#define SERVER_PORT 6465 /* Definiamo come costante la porta del server "assistente" in ascolto ed in attesa di accettare nuove connessioni */
 
 int main()
 {
     /* Rende STDOUT non bufferizzato */
     (void)setvbuf(stdout, NULL, _IONBF, 0);
+
     /* ==========================
      * =       VARIABLES        =
      * ==========================
      * */
     int                listen_file_descriptor;                   /* File descriptor del socket in ascolto sul server */
+
     int                connection_file_descriptor;               /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
+
     int                is_address_reusable = 1;                  /* Valore intero che permette di configurare il server per il riutilizzo di un indirizzo
                                                                   * su cui è già stata effettuata la "@bind()" */
+
     struct sockaddr_in server_address;                           /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del server */
+
     struct sockaddr_in client_address;                           /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del client */
+
     socklen_t          client_size = sizeof(client_address);     /* Grandezza espressa in termini di byte dell'Endpoint client */
+
     int                i = 0;                                    /* Variabile utilizzata da indice per i costrutti iterativi */
+
     pthread_t          threads_id[MAX_THREADS];                  /* Array contenente i descrittori dei threads utilizzati dal server */
-    Args               thread_arguments;
+
+    Args               thread_arguments;                         /* Struttura definita per permettere alla funzione handler del thread, di accettare in input molteplici argomenti.
+                                                                    In particolare, sarà composta da una strttura @sockaddr_in per permettere alla funzione handler di eseguire i 
+                                                                    log delle istruzioni rilevanti eseguite. Inoltre viene utilizzato il campo @file_descriptor, in quanto ci
+                                                                    permetterà di eseguire operazioni di comunicazione sul socket dal thread creato, aperto durante l'accept 
+                                                                    del server */
 
     /* ==========================
      * =    SOCKET CREATION     =
@@ -154,6 +183,8 @@ int main()
 
         /* Attraverso la seguente funzione andiamo a eseguire la Three way Handshake con il client facente richiesta di connessione */
         connection_file_descriptor = AcceptIPV4(listen_file_descriptor, &client_address, &client_size);
+
+        /* Le direttive precompilatore utilizzate nell'implementazione dei server, vengono utilizzate per attivare e disattivare i log dei processi server. */
         #ifdef LOG
         LogHostIPV4(&client_address, "Connected to", NULL);
         #endif
@@ -164,6 +195,7 @@ int main()
          * =================================
          * */
 
+        /* Popoliamo la struttura di tipo @Args, utile come argomento nella chiamata a @pthread_create()*/
         thread_arguments.file_descriptor = connection_file_descriptor;
         thread_arguments.endpoint = &client_address;
 
@@ -216,5 +248,8 @@ int main()
         }
     }
 
+    /* Chiudiamo il file descriptor in ascolto */
+    close(listen_file_descriptor);
+    /* Interrompiamo l'esecuzione del programma con un errore */
     exit(EXIT_FAILURE);
 }
