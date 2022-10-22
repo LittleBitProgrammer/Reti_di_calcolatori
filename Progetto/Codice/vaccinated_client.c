@@ -217,11 +217,14 @@ int main()
     if(FullRead(client_file_descriptor, server_daytime, sizeof(*server_daytime)) < 0)
     {
         /* Caso in cui il server si sia disconnesso */
+
         fprintf(stderr, "Server disconnesso\n");
+
         /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
         free(server_daytime);
         free(client_daytime);
         free(verification_code);
+
         /* Chiusura del socket file descriptor connesso al server */
         close(client_file_descriptor);
         /* Terminiamo con successo il processo client */
@@ -234,9 +237,7 @@ int main()
      * ==================================
      * */
 
-    /*
-     *
-     * */
+    /* Eseguiamo il menu del client vaccinato, la cui funzione @run_vaccinated_menu si occuperà di popolare i parametri di output @client_daytime e @verification_code */
     if(!run_vaccinated_menu(client_daytime, server_daytime, verification_code))
     {
         /* Liberiamo la memoria precedentemente allocata dinamicamente nella memoria heap tramite una "@malloc" */
@@ -249,17 +250,20 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    /*  */
+    /*  
+        Inizializziamo i campi della struttuta di tipo @Vaccinated Package in moodo da inviare al server "centro vaccinale" una request contenente le informazioni dell'utente 
+        iscritto alla piattaforma "Green pass"
+    */
     vaccinated_request_package.vaccination_date = *client_daytime;
     strcpy(vaccinated_request_package.card_code, verification_code);
 
     /* Copiamo la stringa "CMD_SUB" all'interno dell'array di caratteri "@command_writer_buffer" */
     strcpy(command_writer_buffer, "CMD_SUB");
 
-    /* Effettuiamo una richiesta daytime al server con le informazioni contenute nel "@command_writer_buffer" */
+    /* Effettuiamo una richiesta al server con le informazioni contenute nel "@command_writer_buffer" */
     FullWrite(client_file_descriptor, command_writer_buffer, CMD_BUFFER_LEN);
 
-    /*  */
+    /* Effettuiamo una richiesta di iscrizione al server con le informazioni contenute nel @vaccinated_request_package */
     FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
 
     /*  */

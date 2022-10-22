@@ -266,33 +266,41 @@ int compare_date(struct tm* date_1, struct tm* date_2)
 }
 
 /**
- * @brief 
+ * @brief La seguente funzione ha lo scopo di aggiungere un tempo prefissato espresso in mesi a una specifica data passata in input 
  * 
- * @param date
- * @param months 
+ * @param date Struttura @tm utile a rappresentare il tipo di dato data che si vuole aggiornare
+ * @param months Numero di mesi da aggiungere alla data specificata in input @date 
  * 
- * @return struct tm 
+ * @return struct tm Data aggiornata
  */
 struct tm add_month_to_date(struct tm date, int months)
 {
-    /*  */
+    /* Aggiungiamo il numero di mesi passato in input come argomento al campo @tm_mon della struttura @tm passata in input */
     date.tm_mon += months;
+
+    /* Il campo @tm_mon della struttura @tm passata in input potrebbe essere fuori dal range dei mesi <0..11>, pertanto, attraverso la funzione @mktime() rinormalizziamo la data
+     * secondo il calendario locale 
+     */
     mktime(&date);
 
     return date;
 }
 
 /**
- * @brief
+ * @brief Tale funzione ha lo scopo di ottenere una stringa contenente la data e l'ora locale
  * 
- * @return char* 
+ * @return char* Stringa contenente data e ora locale
  */
 char* get_timestamp(void)
 {
+    /* Calcoliamo il numero di secondi trascorsi a partire dal 1 Gennaio 1970 attraverso la funzione @time() definita nella libreria @time.h*/
     time_t timestamp = time(NULL);
+    /* Otteniamo una stringa formattata contenente data ed ora locale attraverso la funzione @ctime() definita nella libreria @time.h*/
     char *daytime = ctime(&timestamp);
 
+    /* Sostituiamo il carattere newline aggiunto dalla funzione @ctime con un carattere di terminazione stringa */
     daytime[strlen(daytime)-1] = 0;
 
+    /* Ritorniamo la stringa formattata contenente data ed ora locale*/
     return daytime;
 }

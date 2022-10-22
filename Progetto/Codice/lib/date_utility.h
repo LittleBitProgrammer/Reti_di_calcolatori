@@ -24,9 +24,9 @@
  * =       Constants        =
  * ==========================
  */
-#define MAX_YEAR 2022 /**/
-#define MIN_YEAR 2020
-#define MAX_DATE_LEN 11
+#define MAX_YEAR 2022 /* Anno di vaccinazione massimo */
+#define MIN_YEAR 2020 /* Anno di vaccinazione minimo */
+#define MAX_DATE_LEN 11 /* Lunghezza massima, in termini di caratteri, di una data */
 
 /* 
  * ================================
@@ -86,7 +86,21 @@ bool is_leap(int);
  * @return int La funzione ritornerà in output -1 nel caso in cui @date_1 sia maggiore di @date_2, altrimenti la differenza in termini di giorni
  */
 int compare_date(struct tm*, struct tm*);
+/**
+ * @brief La seguente funzione ha lo scopo di aggiungere un tempo prefissato espresso in mesi a una specifica data passata in input 
+ * 
+ * @param date Struttura @tm utile a rappresentare il tipo di dato data che si vuole aggiornare
+ * @param months Numero di mesi da aggiungere alla data specificata in input @date 
+ * 
+ * @return struct tm Data aggiornata
+ */
 struct tm add_month_to_date(struct tm, int);
+
+/**
+ * @brief Tale funzione ha lo scopo di ottenere una stringa contenente la data e l'ora locale
+ * 
+ * @return char* Stringa contenente data e ora locale
+ */
 char* get_timestamp(void);
 
 /* Direttiva precompilatore utilizzata per indicare la delimitazione di fine libreria @date_utility.h */

@@ -20,7 +20,13 @@
 #include <netinet/in.h>
 #include "bool_utility.h"
 
-#define MAX_CODE_LEN 21
+/* 
+ * ==========================
+ * =       Constants        =
+ * ==========================
+ */
+
+#define MAX_CODE_LEN 21 /* Lunghezza massima, espressa in termini di caratteri, del codice di tessera sanitaria */
 
 /* 
  * ================================
@@ -64,13 +70,17 @@ typedef struct
 } Subscribe_package;
 
 /**
- * @brief 
+ * @brief Struttura utile a rappresentare e ad indicare la presenza di errori sul server durante le operazioni di lettura, scrittura e apertura file
  * 
- * @property 
- * @property 
- * @property
+ * @property open_file_flag - Valore booleano utile a verificare la presenza di errore durante l'operazione di apertura file
+ * @property write_file_flag - Valore booleano utile a verificare la presenza di errore durante l'operazione di scrittura file
+ * @property read_file_flag - Valore booleano utile a verificare la presenza di errore durante l'operazione di lettura file
  * 
- * @struct
+ * @struct   <------------------------------------File_flags----------------------------------->
+ *           <----- open_file_flag -----> <---- write_file_flag ----> <----- open_file_flag ----->
+ *           ____________________________________________________________________________________
+ *          |        4 byte (int)        |       4 byte (int)        |       4 byte (int)        |
+ *          -------------------------------------------------------------------------------------
  */
 typedef struct
 {
@@ -104,15 +114,24 @@ typedef struct
 } File_result;
 
 /**
- * @brief 
+ * @brief Il nostro protocollo livello applicazione prevede che un utente "revisore" una volta inviata la richiest al client "assistente" riceva da quest'ultimo un pacchetto in 
+ * response contenente diverse proprietà che indicano lo stato e la validità del documento "Green Pass" Corrispondente al codice di tessera sanitaria dell'utente
  * 
- * @property 
- * @property 
- * @property
- * @property 
- * @property
+ * @property is_green_pass_valid - variabile booleana utile ad indicare visivamente la validità del "Green Pass"
+ * @property expiration_date - struct @tm utile a rappresentare la data di scadenza del "Green Pass"
+ * @property last_update - struct @tm utile a rappresentare la data dell'ultimo aggiornamento di stato del documento "Green Pass"
+ * @property motivation - Stringa indicante la motivazione (vaccinazione, covid o guarigione) dell'ultimo aggiornamento di stato del documento "Green Pass"
+ * @property file_flags - struct @File_flags utile a rappresentare e ad indicare la presenza di errori sul server durante le operazioni di lettura, scrittura e apertura file
  * 
- * @struct
+ * @struct   <-------------------------------Reviser_package------------------------------->
+ *           <-------- is_green_pass_valid --------> <-------------- expiration_date -------------->
+ *           ______________________________________________________________________________________
+ *          |              4 byte (int)             |              56 byte (struct tm)             |
+ *          ---------------------------------------------------------------------------------------
+ *           <------ last_update ------> <------ motivation ------> <--------- file_flags --------->
+ *           ______________________________________________________________________________________
+ *          |   56 byte (struct tm)    |    13 byte (char[13])    |  12 byte (struct File_flags)   |
+ *          ---------------------------------------------------------------------------------------
  */
 typedef struct
 {
@@ -124,12 +143,17 @@ typedef struct
 } Reviser_package;
 
 /**
- * @brief 
+ * @brief Il nostro protocollo livello applicazione prevede che il client "amministratore" invii al server "assistente" un pacchetto contenente l'indice di riga corrispondente 
+ *        al codice di tessera sanitaria presente nel file ed una motivazione per la modifica che si vuole applicare (covid o guarigione). 
  * 
- * @property 
- * @property 
+ * @property index_list - indice di riga corrispondente al codice di tessera sanitaria presente nel file
+ * @property motivation - Motivazione per la modifica che si vuole applicare (covid o guarigione)
  * 
- * @struct
+  * @struct   <----------------Administrator_request_package--------------->
+ *           <--------- index_list ---------> <-------- motivation -------->
+ *           ________________________________________________________________
+ *          |          4 byte (int)          |       13 byte (char[13])     |
+ *          ----------------------------------------------------------------
  */
 typedef struct
 {

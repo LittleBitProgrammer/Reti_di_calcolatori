@@ -171,7 +171,7 @@ int main(int argc, char **argv)
     else
     {
         printf("\nInformazioni:\n\n");
-        print_user_information(&reviser_package, 46);
+        output_user_information(&reviser_package, 46);
     }
 
     /* Chiusura del socket file descriptor connesso al server */

@@ -203,6 +203,7 @@ int main()
          * =================================
          * */
 
+        /* Popoliamo la struttura di tipo @Args, utile come argomento nella chiamata a @pthread_create()*/
         thread_arguments.file_descriptor = connection_file_descriptor;
         thread_arguments.endpoint = &client_address;
 
@@ -219,6 +220,8 @@ int main()
         {
             /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
             perror("Thread creation error");
+
+            /* In caso di errore durante la creazione del thread interrompiamo il costrutto iterativo*/
             break;
         }
 
@@ -254,5 +257,8 @@ int main()
         }
     }
 
+    /* Chiudiamo il file descriptor in ascolto */
+    close(listen_file_descriptor);
+    /* Interrompiamo l'esecuzione del programma con un errore */
     exit(EXIT_FAILURE);
 }

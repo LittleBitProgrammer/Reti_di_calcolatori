@@ -85,17 +85,32 @@ void* vaccination_center_handler(void* args)
 {
     /* Rende STDOUT non bufferizzato */
     (void)setvbuf(stdout, NULL, _IONBF, 0);
+    
     /* ==========================
      * =       VARIABLES        =
      * ==========================
      * */
     int                connection_file_descriptor = ((Args*)args)->file_descriptor;   /* File descriptor del socket che si occuperà di gestire nuove connessioni al server */
-    struct sockaddr_in client_address = *(((Args*)args)->endpoint);
-    char               command_reader_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di lettura del comando inviato descriptor del socket */
-    char               command_writer_buffer[CMD_BUFFER_LEN];        /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor del socket */
-    time_t             server_daytime;                               /* Variabile utile a contenere un valore intero rappresentante il numero di secondi da 00:00, 1 gennaio 1970 */
-    struct tm*         local_daytime;                                /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
-    Vaccinated_package vaccinated_response_package;                  /*  */
+
+    struct sockaddr_in client_address = *(((Args*)args)->endpoint);                   /* Struttura utile a rappresentare un Endpoint, in particolare l'indirizzo del client */
+
+    char               command_reader_buffer[CMD_BUFFER_LEN];                         /* Buffer utile all'operazione di lettura del comando inviato descriptor del socket */
+
+    char               command_writer_buffer[CMD_BUFFER_LEN];                         /* Buffer utile all'operazione di scrittura del comando da inviare sul file descriptor 
+                                                                                         del socket */
+
+    time_t             server_daytime;                                                /* Variabile utile a contenere un valore intero con lo scopo di rappresentare il numero di 
+                                                                                         secondi da 00:00, 1 gennaio 1970 */
+
+    struct tm*         local_daytime;                                                 /* Struttura utile a memorizzare data e tempo locale suddivisi in campi */
+
+    Vaccinated_package vaccinated_response_package;                                   /* Il nostro protocollo livello applicazione, prevede, dopo la richiesta daytime, che 
+                                                                                         il client effettui un nuova richiesta al server "centro vaccinale" per effettuare la
+                                                                                         registrazione al sistema "Green pass". Tale richiesta viene effettuata dal client verso il server 
+                                                                                         "centro veccinale", attraverso un package di tipo Vaccinated Package, contente le 
+                                                                                         informazioni inerenti all'identità e alla data di vaccinazione dell'utente, come: 
+                                                                                         - codice di tessera sanitaria 
+                                                                                         - Data di vaccinazione */
 
     while(1)
     {
@@ -105,9 +120,7 @@ void* vaccination_center_handler(void* args)
          * */
 
         /*
-         * Azzeriamo i byte che compongono l'array "@command_reader_buffer" e "@command_writer_buffer" per evitare di avere
-         * valori raw all'interno di questi ultimi
-         * */
+         * Azzeriamo i byte che compongono i seguenti array e strutture per evitare di avere valori raw all'interno di questi ultimi */
         bzero(command_reader_buffer, CMD_BUFFER_LEN);
         bzero(command_writer_buffer, CMD_BUFFER_LEN);
         bzero(&vaccinated_response_package, sizeof(vaccinated_response_package));
@@ -128,9 +141,13 @@ void* vaccination_center_handler(void* args)
              * */
 
             /* Caso in cui il client si sia disconnesso */
+
+            /* Le direttive precompilatore utilizzate nell'implementazione dei server, vengono utilizzate per attivare e disattivare i log dei processi server. */
             #ifdef LOG
+            /* Stampa della disconnesione con il client */
             LogHostIPV4(&client_address, "Client disconnected:", NULL);
             #endif
+
             /* Chiusura del socket file descriptor connesso al client */
             close(connection_file_descriptor);
             /*
@@ -139,14 +156,21 @@ void* vaccination_center_handler(void* args)
              * */
             pthread_exit(NULL);
         }
+        
         #ifdef LOG
         LogHostIPV4(&client_address, "Request received from", "Command request");
         #endif
+
         /*
          * ================================
          * =       COMMAND  COMPARE       =
          * ================================
          * */
+
+         /* 
+          * Il server "centro vaccinale" può gestire molteplici richiste, pertanto per effettuare una qualsiasi operazione, sarà necessario inviare un comando
+          * per eseguire un set di istruzioni predefinite. Per implementare un menu di comandi, ci avvaliamo della funzione @strcmp() definita in @string.h 
+          */
         if(!strcmp(command_reader_buffer, "CMD_DTM"))
         {
             /*
@@ -162,9 +186,18 @@ void* vaccination_center_handler(void* args)
             /* Tale funzione ci permette di convertire un tipo "@time_t" in una struttura utile a memorizzare data e tempo locale suddivisi in campi */
             if((local_daytime = localtime(&server_daytime)) == NULL)
             {
+                /* Caso in cui la funzione @localtime non sia andata a buon fine */
+
+                /* Stampiamo l'errore su standard error */
                 fprintf(stderr, "local day time error\n");
 
+                /* Chiusura del socket file descriptor connesso al client */
                 close(connection_file_descriptor);
+
+                /*
+                 * Tale funzione ci permette di terminare il thread chiamante. Viene passato "@NULL" come argomento in quanto non si vuole
+                 * reperire l'informazione relativa al prossimo thread disponibile
+                 * */
                 pthread_exit(NULL);
             }
 
@@ -211,7 +244,7 @@ void* vaccination_center_handler(void* args)
                 pthread_exit(NULL);
             }
             #ifdef LOG
-            LogHostIPV4(&client_address, "Response received from", command_reader_buffer);
+            LogHostIPV4(&client_address, "Request received from", command_reader_buffer);
             #endif
 
             /* ==========================

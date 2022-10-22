@@ -200,7 +200,7 @@ int main(int argc, char **argv)
     else
     {
         printf("Le informazioni sono state aggiornate come segue:\n");
-        print_user_information(&administrator_response_package.reviser_package, 45);
+        output_user_information(&administrator_response_package.reviser_package, 45);
     }
 
 

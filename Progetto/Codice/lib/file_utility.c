@@ -1,3 +1,17 @@
+/**
+ * @file file_utility.c
+ * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
+ * @brief   La seguente libreria ha lo scopo di incapsulare funzioni legate alla gestione dei file
+ * 
+ * @type    Implementazione libreria @file_utility.c
+ * @version 1.0
+ */
+
+/* 
+ * ==========================
+ * =         Import         =
+ * ==========================
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,14 +19,21 @@
 #include "date_utility.h"
 #include "green_pass_utility.h"
 
+/* 
+ * ================================
+ * =   Function Implementation    =
+ * ================================
+ */
+
 /**
- * @brief
- *
- * @param file_name
- * @param code
- *
- * @return
- * */
+ * @brief Tale funzione ha lo scopo di verificare che una data stringa sia presente in un determinato file
+ * 
+ * @param file_name File in cui si vuole verificare la presenza della stringa passata in input @code
+ * @param code Stringa di cui si vuole verificare la presenza nel file passato in input @file_name
+ * 
+ * @return File_result struttura contenente informazioni relative agli errori di apertura, lettura e scrittura sul file, con l'aggiunta di un valore booleano che ha lo scopo
+ *         di interpretare la presenza di una determinata stringa in un file.
+ */
 File_result is_code_written_in_file(char *file_name, char *code)
 {
     /* Buffer di lettura da file */
@@ -85,12 +106,12 @@ File_result is_code_written_in_file(char *file_name, char *code)
 }
 
 /**
- * @brief
- *
- * @param vaccinated_client_info
- *
- * @return
- * */
+ * @brief 
+ * 
+ * @param vaccinated_client_info 
+ * 
+ * @return File_result 
+ */
 File_result subscribe_vaccinated_client(char* vaccinated_client_info)
 {
     FILE *vaccinated_file;
@@ -119,6 +140,14 @@ File_result subscribe_vaccinated_client(char* vaccinated_client_info)
     return file_errors;
 }
 
+/**
+ * @brief 
+ * 
+ * @param file_name 
+ * @param list_codes 
+ * 
+ * @return int 
+ */
 int read_lines(char* file_name, char** list_codes)
 {
     FILE* file_point;
@@ -170,6 +199,16 @@ int read_lines(char* file_name, char** list_codes)
     return line_counter;
 }
 
+/**
+ * @brief 
+ * 
+ * @param update_package 
+ * @param administrator_response 
+ * @param file_name 
+ * 
+ * @return true 
+ * @return false 
+ */
 bool change_information_in_file(Administrator_request_package* update_package, Administrator_response_package* administrator_response, char* file_name)
 {
     FILE* file_point;
@@ -273,5 +312,3 @@ bool change_information_in_file(Administrator_request_package* update_package, A
     fclose(file_point);
     return TRUE;
 }
-
-
