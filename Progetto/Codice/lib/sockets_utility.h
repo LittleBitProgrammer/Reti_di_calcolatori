@@ -1,11 +1,37 @@
+/**
+ * @file    sockets_utility.h
+ * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
+ * @brief   La seguente libreria ha lo scopo di incapsulare alcune funzioni che avvengono sui sockets, in modo da nascondere la complessità di implementazione ed
+ *          evitare istruzioni ripetute.
+ * 
+ * @type    Libreria
+ * @version 1.0
+ */
+
+/* Direttive precompilatore volte a definire la libreria @sockets_utility.h */
 #ifndef SOCKETS_UTILITY_H
 #define SOCKETS_UTILITY_H
 
-#include <arpa/inet.h>            /* Importata per utilizzare le strutture di tipo "@sockaddr_in" */
+/* 
+ * ==========================
+ * =         Import         =
+ * ==========================
+ */
+#include <arpa/inet.h>
+
+/* 
+ * ==========================
+ * =       Constants        =
+ * ==========================
+ */
 #define CMD_BUFFER_LEN        8   /* Costante volta a definire la dimensione massima dei comandi inviati */
 #define DEFAULT_BACKLOG_SIZE 50   /* Costante volta a definire la dimensione di default massima delle backlog dei servers definiti nel sistema GreenPass */
-#define SECONDS_TO_WAIT      30   /* Secondi che una System call può attendere per individuare un descrittore pronto */
-#define MICROSECONDS_TO_WAIT  0   /* Microsecondi che una System call può attendere per individuare un descrittore pronto */
+
+/* 
+ * ================================
+ * =     Function Definition      =
+ * ================================
+ */
 
 /**
  * @brief Funzione che permette la creazione di un file descriptor associato ad una socket
@@ -87,6 +113,18 @@ size_t FullRead(int, void*, size_t);
  * */
 size_t FullWrite(int, void*, size_t);
 
-void LogHostIPV4(struct sockaddr_in *client_address, char *type_of_request, char *command);
+/**
+ * @brief I server implementati nel progetto fornito, sono stati ingegnerizzati per effettuare dei log di sistema ad ogni azione di rilievo eseguita. Per tal motivo
+ *        la seguente funzione, è stata implementata per effettuare una stampa a video costruita seguendo il seguente pattern:
+ *  
+ *        (timestamp) (comando eseguito dal server) - (motivazione) host (indirizzo IP), port (porta)
+ * 
+ * @param client_address Indirizzo del client con cui, il processso in esecuzione, esegue una determinata azione @action
+ * @param action Tipologia di azione eseguita durante una tipica comunicazione con architettura client/server 
+ * @param command Comando inviato dal client al server, per eseguire un set di istruzioni predefinito. Tale parametro di input può essere espresso con valore @NULL, in quanto
+ *                la stampa a video, verrà scritta sullo standard output dinamicamente, non stampandola, in base al valore passato. 
+ */
+void LogHostIPV4(struct sockaddr_in *, char *, char *);
 
+/* Direttiva precompilatore utilizzata per indicare la delimitazione di fine libreria @sockets_utility.h */
 #endif // SOCKETS_UTILITY_H

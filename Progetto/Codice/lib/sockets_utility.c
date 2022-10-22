@@ -1,12 +1,32 @@
-#include <stdio.h>              /* Importata per utilizzare la funzione "@perror()" */
-#include <stdlib.h>             /* Importata per utilizzare la funzione "@exit()" */
-#include <unistd.h>             /* Importata per utilizzare le funzioni "@read()" e "@write()" */
-#include <errno.h>              /* Importata per utilizzare la variabile globale "@errno" e la costante "@EINTR" */
-#include <netdb.h>
+/**
+ * @file    sockets_utility.c
+ * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
+ * @brief   La seguente libreria ha lo scopo di incapsulare alcune funzioni che avvengono sui sockets, in modo da nascondere la complessità di implementazione ed
+ *          evitare istruzioni ripetute.
+ * 
+ * @type    Implementazione libreria @sockets_utility.h
+ * @version 1.0
+ */
+
+/* 
+ * ==========================
+ * =         Import         =
+ * ==========================
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
 #include <string.h>
 #include "sockets_utility.h"
 #include "date_utility.h"
 #include "thread_utility.h"
+
+/* 
+ * ================================
+ * =   Function Implementation    =
+ * ================================
+ */
 
 /**
  * @brief Funzione che permette la creazione di un file descriptor associato ad una socket
@@ -32,16 +52,20 @@ int Socket(int address_family, int transport_type, int transport_subtype)
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
         perror("Creation socket error");
 
+        /* Il seguente controllo rende la funzione thread safe, in quanto può essere eseguita sul main thread oppure su thread secondari */
         if(is_main_thread())
         {
+            /* Il programma viene interrotto con un errore */
             exit(EXIT_FAILURE);
         }
         else
         {
+            /* Terminiamo l'esecuzione del thread creato */
             pthread_exit(NULL);
         }
     }
 
+    /* Ritorniamo il file descriptor inizializzato, precedentemente, con il valore di ritorno della chiamata "@socket()"*/
     return file_descriptor;
 }
 
@@ -54,14 +78,14 @@ int Socket(int address_family, int transport_type, int transport_subtype)
 int SocketIPV4(void)
 {
     /*
-     * Sfruttiamo la funzione "@Socket()" della libreria "@socket_utility.h" per ritornare un file descriptor associato
+     * Sfruttiamo la funzione "@Socket()" definita, precedentemente, nella stessa libreria, per ritornare un file descriptor associato
      * ad una socket
      * */
     return Socket(AF_INET, SOCK_STREAM, 0);
 }
 
 /**
- * @brief Questa funzione serve ad asscoiare un Endpoint ad un file descriptor specifico "@file_descriptor_to_bind" e "@endpoint"
+ * @brief La seguente funzione ha lo scopo di asscoiare un Endpoint ad un file descriptor specifico "@file_descriptor_to_bind" e "@endpoint"
  *
  * @param file_descriptor_to_bind File descrpitor del socket da associare ad una struttura di tipo "@sockaddr_in"
  * @param endpoint Indirizzo da associare al socket "@file_descriptor_to_bind"
@@ -72,18 +96,19 @@ void BindIPV4(int file_descriptor_to_bind, struct sockaddr_in* endpoint)
      * Attraverso la funzione "@bind()" associamo un file descriptor a un endpoint di tipo "@sockaddr", in modo tale da ereditare
      * le caratteristiche dell'indirizzo rappresentato dalla struttura passata come secondo argomento. In particolare sfruttiamo
      * il valore di ritorno della "@bind()" per la gestione degli errori, in quanto, quest'ultima ritornerà 0 in caso di successo
-     * oppure -1 in caso di errore, configurando errno (numero dell'ultimo errore) per indicare l'errore
+     * oppure -1 in caso di errore, configurando errno (numero dell'ultimo errore) per indicare l'errore stesso
      * */
     if(bind(file_descriptor_to_bind, (struct sockaddr*)endpoint, sizeof(*endpoint)) < 0)
     {
-        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) la quale descrive la natura dell'errore */
         perror("Bind to endpoint error");
+        /* Interrompiamo l'esecuzione del programma con un errore */
         exit(EXIT_FAILURE);
     }
 }
 
 /**
- * @brief La funzione configura "@file_descriptor", passato in input, in ascolto con una coda delle richieste pari a "@backlog_size"
+ * @brief La funzione configura il "@file_descriptor", passato in input, in modalità ascolto, con una coda delle richieste pari a "@backlog_size"
  *
  * @param file_descriptor File descriptor del socket da configurare in modalità ascolto
  * @param backlog_size Coda delle connessioni in pendenza
@@ -109,12 +134,13 @@ void Listen(int file_descriptor, int backlog_size)
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
         perror("Error while configuring the socket in listening");
+        /* Interrompiamo l'esecuzione del programma con un errore */
         exit(EXIT_FAILURE);
     }
 }
 
 /**
- * @brief Tale funzione permette di connettere due socket "@file_descriptor_to_connect" ed il socket associato alla struttura "@destination_endpoint"
+ * @brief La seguente funzione permette di connettere due socket "@file_descriptor_to_connect" ed il socket associato alla struttura "@destination_endpoint"
  *
  * @param file_descriptor_to_connect File descrittore sorgente da connettere con il socket associato alla struttura "@destination_endpoint"
  * @param destination_endpoint Endopoint della destinazione da connettere con il file descrittore sorgente "@file_descriptor_to_connect"
@@ -130,12 +156,16 @@ void ConnectIPV4(int file_descriptor_to_connect, struct sockaddr_in* destination
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
         perror("Connect IPv4 error");
+
+        /* Il seguente controllo rende la funzione thread safe, in quanto può essere eseguita sul main thread oppure su thread secondari */
         if(is_main_thread())
         {
+            /* Il programma viene interrotto con un errore */
             exit(EXIT_FAILURE);
         }
         else
         {
+            /* Terminiamo l'esecuzione del thread creato */
             pthread_exit(NULL);
         }
     }
@@ -146,7 +176,7 @@ void ConnectIPV4(int file_descriptor_to_connect, struct sockaddr_in* destination
  *
  * @param listen_file_descriptor File descriptor configurato in modalità ascolto sul quale arriverà la nuova richiesta di connessione
  * @param client_address Parametro di output, utile ad identificare l'indirizzo del client
- * @param client_size Parametro di output rappresentante la dimensione della struttura utilizzata per rappresentare il client
+ * @param client_size Parametro di output utile a rappresentante la dimensione della struttura utilizzata per rappresentare il client
  *
  * @return File descriptor avente le stesse proprietà del "@listen_file_descriptor" utile a gestire la nuova connessione e a servire il client
  * */
@@ -166,9 +196,11 @@ int AcceptIPV4(int listen_file_descriptor, struct sockaddr_in* client_address, s
     {
         /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
         perror("Error while trying to accept a new connection");
+        /* Interrompiamo l'esecuzione del programma con un errore */
         exit(EXIT_FAILURE);
     }
 
+    /* Ritorniamo il file descriptor inizializzato, precedentemente, con il valore di ritorno della chiamata "@accept()"*/
     return connection_file_descriptor;
 }
 
@@ -181,7 +213,8 @@ int AcceptIPV4(int listen_file_descriptor, struct sockaddr_in* client_address, s
  * @param buffer Buffer contenente i byte da leggere
  * @param n_bytes Numero di bytes presenti nel "@buffer"
  *
- * @return Numero di byte rimanenti da leggere
+ * @return Numero di byte rimanenti da leggere. Se il valore ritornato è maggiore di zero, la funzione indicherà al processo in esecuzione che il 
+ *         corrispettivo client/server si è disconnesso inviando un EOF
  * */
 size_t FullRead(int file_descriptor, void* buffer, size_t n_bytes)
 {
@@ -212,12 +245,15 @@ size_t FullRead(int file_descriptor, void* buffer, size_t n_bytes)
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
                 perror("Reading error");
+                /* Il seguente controllo rende la funzione thread safe, in quanto può essere eseguita sul main thread oppure su thread secondari */
                 if(is_main_thread())
                 {
+                    /* Il programma viene interrotto con un errore */
                     exit(EXIT_FAILURE);
                 }
                 else
                 {
+                    /* Terminiamo l'esecuzione del thread creato */
                     pthread_exit(NULL);
                 }
             }
@@ -235,6 +271,7 @@ size_t FullRead(int file_descriptor, void* buffer, size_t n_bytes)
         buffer += n_read;
     }
 
+    /* Ritorniamo in output il numero di byte rimanenti da leggere */
     return n_left;
 }
 
@@ -278,12 +315,15 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
             {
                 /* In un qualsiasi altro caso, usciremo con dal programma con un errore */
                 perror("Writing error");
+                /* Il seguente controllo rende la funzione thread safe, in quanto può essere eseguita sul main thread oppure su thread secondari */
                 if(is_main_thread())
                 {
+                    /* Il programma viene interrotto con un errore */
                     exit(EXIT_FAILURE);
                 }
                 else
                 {
+                    /* Terminiamo l'esecuzione del thread creato */
                     pthread_exit(NULL);
                 }
             }
@@ -296,35 +336,54 @@ size_t FullWrite(int file_descriptor, void* buffer, size_t n_bytes)
         buffer += n_written;
     }
 
+    /* Ritorniamo in output il numero di byte rimanenti da scrivere */
     return n_left;
 }
 
-void LogHostIPV4(struct sockaddr_in* client_address, char* type_of_request, char* command)
+/**
+ * @brief I server implementati nel progetto fornito, sono stati ingegnerizzati per effettuare dei log di sistema ad ogni azione di rilievo eseguita. Per tal motivo
+ *        la seguente funzione, è stata implementata per effettuare una stampa a video costruita seguendo il seguente pattern:
+ *  
+ *        (timestamp) (comando eseguito dal server) - (azione) host (indirizzo IP), port (porta)
+ * 
+ * @param client_address Indirizzo del client con cui, il processso in esecuzione, esegue una determinata azione @action
+ * @param action Tipologia di azione eseguita durante una tipica comunicazione con architettura client/server 
+ * @param command Comando inviato dal client al server, per eseguire un set di istruzioni predefinito. Tale parametro di input può essere espresso con valore @NULL, in quanto
+ *                la stampa a video, verrà scritta sullo standard output dinamicamente, non stampandola, in base al valore passato. 
+ */
+void LogHostIPV4(struct sockaddr_in* client_address, char* action, char* command)
 {
-    struct hostent *host;
-    char buffer[INET6_ADDRSTRLEN];
+    /* Indirizzo ip del client con cui, il processso in esecuzione, esegue una determinata azione */
+    char ip_address[INET6_ADDRSTRLEN];
+    /* Data e orario in cui l'azione @action è avvenuta. Il valore della seguente variabile viene inizializzato attraverso la funzione @get_timestamp() definita in @date_utility.h*/
     char* timestamp = get_timestamp();
 
-    inet_ntop(AF_INET, &(client_address->sin_addr),buffer,INET6_ADDRSTRLEN);
-
-    printf("%s%s%s%s - %s host %s, port %d,", (timestamp != NULL) ? timestamp : "",
-                                                     (command != NULL) ? " (" : "",
-                                                     (command != NULL) ? command : "",
-                                                     (command != NULL) ? ")" : "",
-                                                     type_of_request, buffer, ntohs(client_address->sin_port));
-
-    if((host = gethostbyaddr((const char *) &(client_address->sin_addr), sizeof(client_address->sin_addr), client_address->sin_family)) == NULL)
+    /* 
+     * Attraverso la seguente funzione, convertiamo l'indirizzo IP passato in input (secondo argomento) in formato network order e lo memorizziamo all'interno del buffer
+     * @ip_address in formato dotted notation 
+     * */
+    if(inet_ntop(AF_INET, &(client_address->sin_addr), ip_address, INET6_ADDRSTRLEN) == NULL)
     {
-        herror("Reverse DNS error: ");
+        /* La seguente funzione produce un messaggio sullo standard error (file descriptor: 2) che descrive la natura dell'errore */
+        perror("IP network to presentation error (inet_ntop)");
+
+        /* Il seguente controllo rende la funzione thread safe, in quanto può essere eseguita sul main thread oppure su thread secondari */
         if(is_main_thread())
         {
+            /* Il programma viene interrotto con un errore */
             exit(EXIT_FAILURE);
         }
         else
         {
+            /* Terminiamo l'esecuzione del thread creato */
             pthread_exit(NULL);
         }
     }
 
-    printf(" hostname %s\n", host->h_name);
+    /* Stampa formattata del log desiderato */
+    printf("%s%s%s%s - %s host %s, port %d,", (timestamp != NULL) ? timestamp : "", 
+                                                     (command != NULL) ? " (" : "",
+                                                     (command != NULL) ? command : "",
+                                                     (command != NULL) ? ")" : "",
+                                                     action, ip_address, ntohs(client_address->sin_port));
 }
