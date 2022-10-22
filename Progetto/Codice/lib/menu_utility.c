@@ -273,7 +273,7 @@ bool accept_terms()
     printf("Accettare il trattamento dei dati:\n");
     printf("1. Accetto\n");
     printf("2. Non Accetto\n");
-    printf(">");
+    printf("> ");
 
     /* Richiediamo all'utente di accettare termini e condizioni*/
     scanf("%d", &accepted_terms);

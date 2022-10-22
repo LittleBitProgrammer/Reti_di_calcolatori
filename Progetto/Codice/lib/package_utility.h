@@ -168,7 +168,15 @@ typedef struct
  * @property 
  * @property
  * 
- * @struct
+ * @struct   <----------Administrator_response_package---------->
+ *           <----- not_updatable ----> <-------- code ---------->
+ *           _____________________________________________________
+ *          |       4 byte (int)       |    21 byte (char[21])    |
+ *          -------------------------------------------------------
+ *           <----------------- reviser_package ----------------->
+ *           _____________________________________________________
+ *          |   176 byte (struct Administrator_response_package)  |
+ *          ------------------------------------------------------
  */
 typedef struct
 {

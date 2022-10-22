@@ -604,7 +604,7 @@ void* central_server_handler(void* args)
             char* vaccinated_array_list;
             int size_vaccinated_list;
 
-            if((size_vaccinated_list = read_lines(VACCINATED_FILE_NAME, &vaccinated_array_list)) == -1)
+            if((size_vaccinated_list = get_file_list(VACCINATED_FILE_NAME, &vaccinated_array_list)) == -1)
             {
                 #ifdef LOG
                 LogHostIPV4(&client_address, "Disconnected from client:", NULL);
