@@ -56,10 +56,10 @@ typedef struct
 } Vaccinated_package;
 
 /**
- * @brief 
+ * @brief Struttura utile a rappresentare le informazioni relative alla vaccinazione di un utente
  * 
- * @property 
- * @property 
+ * @property vaccinated_package informazioni relative al codice di tessera sanitaria e data di vaccinazione dell'utente
+ * @property expiration_date informazione relativa alla data di scadenza del Green Pass dell'utente
  * 
  * @struct   <------------------------------Subscribe_package----------------------------->
  *           <------------ vaccinated_package -----------> <------- expiration_date ------->
@@ -166,11 +166,12 @@ typedef struct
 } Administrator_request_package;
 
 /**
- * @brief 
+ * @brief Struttura utile a rappresentare la risposta da consegnare al client amministratore contenente le informazioni relative alla modifica del
+ *        documento Green Pass
  * 
- * @property 
- * @property 
- * @property
+ * @property not_updatable Flag utile ad identificare se le informazioni utente sono modificabili
+ * @property code codice di tessera sanitaria dell'utente modificato
+ * @property reviser_package informazioni relative alla modifica del documento Green Pass
  * 
  * @struct   <----------Administrator_response_package---------->
  *           <----- not_updatable ----> <-------- code ---------->
