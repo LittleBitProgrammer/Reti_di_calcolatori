@@ -16,6 +16,7 @@ build_central_server:
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
+		lib/encryption_utility.c \
 		-o ./output/server_centrale
 
 # Build server assistente
@@ -26,6 +27,7 @@ build_assistant_server:
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
+		lib/encryption_utility.c \
 		-o ./output/server_assistente
 
 # Build server centro vaccinale
@@ -36,6 +38,7 @@ build_vaccinated_server:
 		lib/file_utility.c \
 		lib/date_utility.c \
 		lib/green_pass_utility.c \
+		lib/encryption_utility.c \
 		-o ./output/centro_vaccinale
 
 # Build client vaccinale
@@ -50,6 +53,7 @@ build_vaccinated_client:
 		lib/buffer_utility.c \
 		lib/green_pass_utility.c \
 		lib/thread_utility.c \
+		lib/encryption_utility.c \
 		-o ./output/client_vaccinale
 		
 
@@ -65,6 +69,7 @@ build_reviser_client:
 		lib/buffer_utility.c \
 		lib/green_pass_utility.c \
 		lib/thread_utility.c \
+		lib/encryption_utility.c \
 		-o ./output/client_reviser
 
 # Build client amministratore
@@ -79,6 +84,7 @@ build_administrator_client:
 		lib/buffer_utility.c \
 		lib/green_pass_utility.c \
 		lib/thread_utility.c \
+		lib/encryption_utility.c \
 		-o output/client_administrator
 
 # Run del server centrale

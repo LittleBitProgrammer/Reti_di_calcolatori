@@ -28,6 +28,7 @@
 #include "file_utility.h"
 #include "date_utility.h"
 #include "green_pass_utility.h"
+#include "encryption_utility.h"
 
 /* 
  * ==========================
@@ -1289,6 +1290,13 @@ void* assistant_server_handler(void* args)
             
             /* Chiudiamo la connessione con il server centrale */
             close(administrator_socket);
+
+            int i;
+            for(i = 0; i < size_codes_list; i++)
+            {
+                /* decriptiamo ogni elemento contenuto nella lista */
+                xor_crypt(codes_list + (i * 21), 14);
+            }
 
             /*                                 size_codes_list
              * |client Amministratore|<----------------------------------|Server assistente|

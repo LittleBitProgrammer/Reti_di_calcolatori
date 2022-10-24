@@ -22,7 +22,7 @@ add_executable(client_vaccinato vaccinated_client.c
                                 lib/buffer_utility.c lib/buffer_utility.h
                                 lib/package_utility.h
                                 lib/green_pass_utility.c lib/green_pass_utility.h
-                                lib/thread_utility.c lib/thread_utility.h)
+                                lib/thread_utility.c lib/thread_utility.h lib/encryption_utility.c lib/encryption_utility.h)
 
 # - client amministratore
 add_executable(client_amministratore administrator_client.c
@@ -35,7 +35,7 @@ add_executable(client_amministratore administrator_client.c
                                      lib/digits_utility.c lib/digits_utility.h
                                      lib/file_utility.c lib/file_utility.h
                                      lib/green_pass_utility.c lib/green_pass_utility.h
-                                     lib/thread_utility.c lib/thread_utility.h)
+                                     lib/thread_utility.c lib/thread_utility.h lib/encryption_utility.c lib/encryption_utility.h)
 
 # - client revisore
 add_executable(client_revisore reviser_client.c
@@ -49,7 +49,7 @@ add_executable(client_revisore reviser_client.c
                                lib/buffer_utility.c lib/buffer_utility.h
                                lib/package_utility.h
                                lib/green_pass_utility.c lib/green_pass_utility.h
-                               lib/thread_utility.c lib/thread_utility.h)
+                               lib/thread_utility.c lib/thread_utility.h lib/encryption_utility.c lib/encryption_utility.h)
 
 # - server centro vaccinale
 add_executable(server_centro_vaccinale vaccination_center_server.c
@@ -58,7 +58,7 @@ add_executable(server_centro_vaccinale vaccination_center_server.c
                                        lib/bool_utility.h
                                        lib/file_utility.c lib/file_utility.h
                                        lib/date_utility.c lib/date_utility.h
-                                       lib/green_pass_utility.c lib/green_pass_utility.h)
+                                       lib/green_pass_utility.c lib/green_pass_utility.h lib/encryption_utility.c lib/encryption_utility.h)
 
 # - server centrale
 add_executable(server_centrale central_server.c
@@ -67,7 +67,7 @@ add_executable(server_centrale central_server.c
                                lib/bool_utility.h
                                lib/file_utility.c lib/file_utility.h
                                lib/date_utility.c lib/date_utility.h
-                               lib/green_pass_utility.c lib/green_pass_utility.h)
+                               lib/green_pass_utility.c lib/green_pass_utility.h lib/encryption_utility.c lib/encryption_utility.h)
 
 # - server assistente
 add_executable(server_assistente assistant_server.c
@@ -76,6 +76,6 @@ add_executable(server_assistente assistant_server.c
                                  lib/bool_utility.h
                                  lib/file_utility.c lib/file_utility.h
                                  lib/date_utility.c lib/date_utility.h
-                                 lib/green_pass_utility.c lib/green_pass_utility.h)
+                                 lib/green_pass_utility.c lib/green_pass_utility.h lib/encryption_utility.c lib/encryption_utility.h)
 
 
