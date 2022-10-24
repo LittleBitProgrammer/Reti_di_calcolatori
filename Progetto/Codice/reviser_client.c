@@ -21,6 +21,7 @@
 #include "lib/sockets_utility.h"
 #include "lib/menu_utility.h"
 #include "lib/package_utility.h"
+#include "lib/encryption_utility.h"
 
 /* 
  * ==========================
@@ -176,7 +177,9 @@ int main()
     /*                             card_code[21]
      * |Client revisore|----------------------------------->|Server Assistente|
      */
-    FullWrite(client_file_descriptor, writer_buffer, 21);
+
+    /* Criptiamo il codice tessera sanitaria da inviare al server assistente */
+    FullWrite(client_file_descriptor, xor_crypt(writer_buffer,14), 21);
 
     /*                             Reviser_package
      * |client revisore|<----------------------------------|Server assistente|

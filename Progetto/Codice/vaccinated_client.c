@@ -21,7 +21,7 @@
 #include "lib/sockets_utility.h"
 #include "lib/menu_utility.h"
 #include "lib/package_utility.h"
-#include "lib/code_verification.h"
+#include "lib/encryption_utility.h"
 
 /* 
  * ==========================
@@ -279,6 +279,8 @@ int main()
      * |Client vaccinato|----------------------------------->|Server centro vaccinale|
      */
 
+    /* Criptiamo il codice da inviare al server centro vaccinale */
+    xor_crypt(vaccinated_request_package.card_code, 14);
     /* Effettuiamo una richiesta di iscrizione al server con le informazioni contenute nel @vaccinated_request_package */
     FullWrite(client_file_descriptor, &vaccinated_request_package, sizeof(vaccinated_request_package));
 

@@ -1,5 +1,5 @@
 /**
- * @file date_utility.h
+ * @file encryption_utility.h
  * @author  Roberto Vecchio, Francesco Mabilia & Gaetano Ippolito
  * @brief   La seguente libreria ha lo scopo di definire diverse funzionalità e costanti per la gestione delle date utilizzate nel sistema "Green Pass"
  * 
